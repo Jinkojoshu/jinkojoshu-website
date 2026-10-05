@@ -1,0 +1,8 @@
+# Only the website and its tools are versioned; the raw media folders stay local.
+/*
+!/site/
+!/tools/
+!/.gitignore
+!/netlify.toml
+!/README.md
+.DS_Store
