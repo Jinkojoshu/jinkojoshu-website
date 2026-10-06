@@ -1,372 +1,192 @@
 #!/usr/bin/env python3
-"""Generates site/index.html from the content lists below.
-Edit the lists (titles, captions, handwritten names, years) and run:  python3 tools/build-page.py
+"""Generates the site pages from the content below:
+  index.html        the cover — an open magazine with the showreel + small magazines
+  commercials.html  Nº01 Commercials & Lookbook  (a magazine you page through)
+  dance.html        Nº02 Dance
+  styling.html      Nº03 Styling
+  photography.html  Nº04 Through my lens
+Edit the lists / page text and run:  python3 tools/build-page.py
 """
 from html import escape as e
 from pathlib import Path
 
-# ── Commercials: (title, sub, thumbnail, full video, hover clip or None, award or None)
+# ── Commercials, in order. Each: title, sub, thumbnail (assets/thumbs), focus of the thumbnail crop,
+#    and what plays: video (assets/video file), clip (hover preview) or vimeo (id).
 COMMERCIALS = [
-    ("Nike", "Member Days · 2023", "nike", "nike-member-days", "clip-nike-member-days-4x5", None),
-    ("Samsung", "Galaxy Z Flip6 · global campaign", "samsung", "samsung", None, None),
-    ("bol × JBL", "Sport Offsite · 2026", "boljbl", "bol-x-jbl", None, None),
-    ("Lavish", "Commercial · 2025", "lavish", "lavish", "clip-lavish", None),
-    ("Philips", "Commercial · 2025", "philips", "philips", None, None),
-    ("Foot Athletes", "Commercial · 2025", "taf", "taf-2025", None, None),
-    ("Lucid Dreaming", "Trailer · 2023", "lucid", "lucid-dreaming-trailer", "clip-lucid-dreaming", "Gouden Kalf competition"),
-    ("Nike", "Behind the scenes · male model", "nikebts", "nike-bts", None, None),
+    dict(title="Nike", sub="Member Days · 2023", thumb="nike", video="nike-member-days", clip="clip-nike-member-days-4x5"),
+    dict(title="Samsung", sub="Galaxy Z Flip6 · global campaign", thumb="samsung", focus="50% 40%", video="samsung"),
+    dict(title="bol × JBL", sub="Sport Offsite · 2026", thumb="boljbl", video="bol-x-jbl"),
+    dict(title="Lavish", sub="Commercial · 2025", thumb="lavish", focus="38% 50%", video="lavish", clip="clip-lavish"),
+    dict(title="Philips", sub="Commercial · 2025", thumb="philips", focus="50% 30%", video="philips"),
+    dict(title="Foot Athletes", sub="Commercial · 2025", thumb="taf", focus="42% 50%", video="taf-2025"),
+    dict(title="Lucid Dreaming", sub="Trailer · 2023", thumb="lucid", focus="41% 50%", video="lucid-dreaming-trailer",
+         award="Gouden Kalf competition"),
+    dict(title="Nike", sub="Behind the scenes · male model", thumb="nikebts", focus="50% 30%", video="nike-bts"),
 ]
+# The big feature page of the commercials (vertical film on Vimeo)
+WEMBY = dict(title="Nike × Wemby", sub="Basketball · 2025", thumb="wemby", vimeo="1175554062")
 
-# ── Lookbook prints: (image slug, handwritten name, caption)
-LOOKBOOK = [
-    ("jinko-portrait", "Portrait", "Portrait"),
-    ("nike-member-days-look", "Nike", "Nike — Member Days"),
-    ("polaroid-01", "Polas", "Polaroid"),
-    ("polaroid-02", "Polas", "Polaroid"),
-    ("polaroid-03", "Polas", "Polaroid"),
-    ("bol-jbl-01", "bol × JBL", "bol × JBL — campaign still"),
-    ("bol-jbl-02", "bol × JBL", "bol × JBL — campaign still"),
-    ("bol-jbl-03", "bol × JBL", "bol × JBL — campaign still"),
-    ("adidas-lookbook", "Adidas", "Adidas lookbook"),
-    ("pasqual-shoot", "Pasqual", "Pasqual shoot"),
-    ("editorial-01", "Editorial", "Editorial"),
-    ("editorial-03", "Editorial", "Editorial"),
-    ("nath-martin", "Nath Martin", "Photo: Nath Martin"),
-    ("film-2025-01", "Film '25", "Film, 2025"),
-    ("film-2025-02", "Film '25", "Film, 2025"),
-    ("film-2025-03", "Film '25", "Film, 2025"),
-    ("editorial-04", "Editorial", "Editorial"),
-    ("editorial-05", "Editorial", "Editorial"),
-    ("editorial-02", "Green", "Editorial"),
-    ("editorial-06", "Editorial", "Editorial"),
-    ("lucid-dreaming-group", "Lucid", "Lucid Dreaming — cast"),
-]
+# Last page of the commercials: the brands
+BRANDS = [("Nike", "2023 · 2025"), ("Samsung", "2024"), ("bol", "2026"), ("JBL", "2026"), ("Philips", "2025"),
+          ("Lavish", "2025"), ("Foot Athletes", "2025"), ("Lucid Dreaming", "2023 ★"), ("Madonna", "Film"),
+          ("Eurovision", "2025")]
 
-PHOTOGRAPHY = [f"photography-{i:02d}" for i in range(1, 15)]
+# ── Lookbook: a tight, editorial selection. (image slug, caption)
+LB = {
+    2: ("nike-member-days-look", "Nike — Member Days"),
+    5: ("polaroid-03", "Polaroid"),
+    8: ("bol-jbl-03", "bol × JBL — campaign"),
+    9: ("adidas-lookbook", "Adidas — lookbook"),
+    10: ("pasqual-shoot", "Shot with Pasqual"),
+    11: ("editorial-01", "Editorial"),
+    13: ("nath-martin", "Photographed by Nath Martin"),
+    15: ("film-2025-02", "On film, 2025"),
+    17: ("editorial-04", "Editorial"),
+    19: ("editorial-02", "Editorial"),
+    21: ("lucid-dreaming-group", "Lucid Dreaming — the cast"),
+}
+
+PHOTO = {i: (f"photography-{i:02d}", "Shot by Jinko") for i in range(1, 15)}
 
 TGS_PHOTOS = ["tgs-01", "tgs-02", "tgs-03"]
 YADE_PHOTOS = ["yade-01", "yade-02", "yade-03", "yade-04"]
-STYLING_PHOTOS = [("coast-contra-01", "Coast Contra"), ("coast-contra-02", "Coast Contra"), ("coast-contra-03", "Coast Contra")]
+
+# ── The magazines: (page, issue no, name, masthead, cover photo, photo focus, caption)
+ISSUES = [
+    ("commercials.html", "Nº01", "Commercials & Lookbook", None, None, None, None),
+    ("dance.html", "Nº02", "Dance", "Dance", "ghetto-funk-01", "45% 40%", "Madonna · The Greatest Show · Ghetto Funk"),
+    ("styling.html", "Nº03", "Styling", "Styling", "coast-contra-01", "50% 60%", "Coast Contra · Akyna"),
+    ("photography.html", "Nº04", "Through my lens", "Lens", "photography-02", "50% 35%", "My photography"),
+]
 
 
-def video_card(title, sub, thumb, video, clip=None, no="", ratio="r-45", award=None, caption=None):
-    media = (f'<video data-src="assets/video/{clip}.mp4" poster="assets/thumbs/{thumb}.jpg" muted loop playsinline preload="none"></video>'
-             if clip else f'<img src="assets/thumbs/{thumb}.jpg" alt="" loading="lazy">')
-    aw = f'<span class="award">★ {e(award)}</span>' if award else ""
-    return f'''      <button class="card" data-video="assets/video/{video}.mp4" data-caption="{e(caption or f'{title} — {sub}')}">
-        <div class="cardimg {ratio}">{media}<span class="no">{e(no)}</span><span class="play">▶</span>{aw}</div>
-        <span class="c-brand">{e(title)}</span><span class="c-sub">{e(sub)}</span>
-      </button>'''
+# ───────────────────────── building blocks ─────────────────────────
+def card(c, no="", ratio_cls="", fill=True):
+    """A commercial / film card. Plays a local film, a Vimeo film or (hover) a short clip."""
+    focus = f' style="object-position:{c["focus"]}"' if c.get("focus") else ""
+    if c.get("clip"):
+        media = f'<video data-src="assets/video/{c["clip"]}.mp4" poster="assets/thumbs/{c["thumb"]}.jpg" muted loop playsinline preload="none"{focus}></video>'
+    else:
+        media = f'<img src="assets/thumbs/{c["thumb"]}.jpg" alt="" loading="lazy"{focus}>'
+    play = f'data-vimeo="{c["vimeo"]}" data-vertical="1"' if c.get("vimeo") else f'data-video="assets/video/{c["video"]}.mp4"'
+    aw = f'<span class="award">★ {e(c["award"])}</span>' if c.get("award") else ""
+    cap = e(c.get("caption") or f'{c["title"]} — {c["sub"]}')
+    return (f'<button class="card{" fill" if fill else ""}" {play} data-caption="{cap}">'
+            f'<div class="cardimg {ratio_cls}">{media}<span class="no">{e(no)}</span><span class="play">▶</span>{aw}</div>'
+            f'<span class="c-brand">{e(c["title"])}</span><span class="c-sub">{e(c["sub"])}</span></button>')
 
 
-def yt_card(yid, title, sub, no, caption, start=None):
+def yt_card(yid, title, sub, no, caption, start=None, fill=True, stamp=None):
     st = f' data-start="{start}"' if start else ""
-    return f'''      <button class="card" data-youtube="{yid}"{st} data-caption="{e(caption)}">
-        <div class="cardimg r-169"><img src="assets/yt/{yid}.jpg" alt="" loading="lazy"><span class="no">{e(no)}</span><span class="play">▶</span></div>
-        <span class="c-brand">{e(title)}</span><span class="c-sub">{e(sub)}</span>
-      </button>'''
+    ts = f'<span class="timestamp">▶ {stamp}</span>' if stamp else ""
+    return (f'<button class="card{" fill" if fill else ""}" data-youtube="{yid}"{st} data-caption="{e(caption)}">'
+            f'<div class="cardimg{"" if fill else " r-169"}"><img src="assets/yt/{yid}.jpg" alt="" loading="lazy"><span class="no">{e(no)}</span><span class="play">▶</span>{ts}</div>'
+            f'<span class="c-brand">{e(title)}</span><span class="c-sub">{e(sub)}</span></button>')
 
 
 def photo_card(slug, title, sub, caption):
-    return f'''      <button class="card" data-full="assets/img/{slug}.jpg" data-caption="{e(caption)}">
-        <div class="cardimg r-32"><img src="assets/img/{slug}-sm.jpg" alt="{e(caption)}" loading="lazy"></div>
-        <span class="c-brand">{e(title)}</span><span class="c-sub">{e(sub)}</span>
-      </button>'''
+    return (f'<button class="card fill" data-full="assets/img/{slug}.jpg" data-caption="{e(caption)}">'
+            f'<div class="cardimg"><img src="assets/img/{slug}-sm.jpg" alt="{e(caption)}" loading="lazy"></div>'
+            f'<span class="c-brand">{e(title)}</span><span class="c-sub">{e(sub)}</span></button>')
 
 
-def prints(items):
-    out = []
-    for i, (slug, name, cap) in enumerate(items, 1):
-        out.append(f'    <button class="print" data-full="assets/img/{slug}.jpg" data-caption="{e(f"{i:02d} — {cap}")}">'
-                   f'<img src="assets/img/{slug}-sm.jpg" alt="{e(cap)}" loading="lazy">'
-                   f'<span class="hand no">{i}</span><span class="hand name">{e(name)}</span></button>')
-    return "\n".join(out)
+def tile(slug, caption):
+    return f'<button class="tile" data-full="assets/img/{slug}.jpg" data-caption="{e(caption)}"><img src="assets/img/{slug}-sm.jpg" alt="{e(caption)}" loading="lazy"></button>'
 
 
-def media_grid(slugs, caption):
-    return "\n".join(
-        f'      <button class="tile" data-full="assets/img/{s}.jpg" data-caption="{e(caption)}"><img src="assets/img/{s}-sm.jpg" alt="{e(caption)}" loading="lazy"></button>'
-        for s in slugs)
+def grid(items, cols, rows=None, tpl=None):
+    rows = rows or -(-len(items) // cols)
+    style = f"--cols:{cols};--rows:{rows}" + (f";grid-template-rows:{tpl}" if tpl else "")
+    return f'<div class="pg-grid" style="{style}">{"".join(items)}</div>'
 
 
-commercials_html = "\n".join(
-    video_card(t, s, th, v, c, no=f"{i:02d}", award=a) for i, (t, s, th, v, c, a) in enumerate(COMMERCIALS, 1))
+def giant(rows, label, tag="h2", cls=""):
+    """Huge stacked letters at the bottom of a page; main.js sizes them to fill the band exactly."""
+    spans = "".join(f"<span>{e(r)}</span>" for r in rows)
+    return f'<div class="band"><{tag} class="giant {cls}" aria-label="{e(label)}">{spans}</{tag}></div>'
 
-page = f'''<!doctype html>
+
+def top(left, right=""):
+    return f'<div class="pg-top"><span>{left}</span><span>{right}</span></div>'
+
+
+class Page:
+    def __init__(self, html, section=None, cls="", band=None):
+        self.html, self.section, self.cls, self.band = html, section, cls, band
+
+
+# photo layouts (lookbook + photography): clean, editorial — no pins
+def photo(no, slug, cap, cls=""):
+    return (f'<figure class="ph {cls}"><button class="ph-img" data-full="assets/img/{slug}.jpg" data-caption="{e(f"Nº{no:02d} — {cap}")}">'
+            f'<img src="assets/img/{slug}-sm.jpg" srcset="assets/img/{slug}-sm.jpg 900w, assets/img/{slug}.jpg 2200w" sizes="(max-width: 760px) 100vw, 45vw" alt="{e(cap)}" loading="lazy"></button>'
+            f'<figcaption><i>Nº{no:02d}</i> {e(cap)}</figcaption></figure>')
+
+
+def bleed_page(section, no, item):
+    return Page(photo(no, *item, "ph-bleed"), section, "photo-page")
+
+
+def framed_page(section, label, no, item):
+    return Page(f'<div class="pg">{top(label, f"Nº{no:02d}")}{photo(no, *item, "ph-framed")}</div>', section)
+
+
+def pair_page(section, label, a, b, stack=False):
+    (na, ia), (nb, ib) = a, b
+    return Page(f'<div class="pg">{top(label, f"Nº{na:02d} — {nb:02d}")}'
+                f'<div class="ph-pair{" ph-stack" if stack else ""}">{photo(na, *ia)}{photo(nb, *ib)}</div></div>', section)
+
+
+def opener_page(section, kicker, title, deck, no, item):
+    return Page(f'<div class="pg">{top(kicker, section[1])}<h2 class="pg-title">{title}</h2>'
+                f'<p class="pg-deck">{deck}</p>{photo(no, *item, "ph-framed")}</div>', section)
+
+
+def title_page(section, kicker, rows, deck, band="44%", body=""):
+    return Page(f'<div class="pg">{top(kicker, section[1])}<p class="pg-deck">{deck}</p>{body}</div>'
+                + giant(rows, section[1]), section, "", band)
+
+
+def feature_page(section, kicker, right, heading, deck, media, after=""):
+    return Page(f'<div class="pg">{top(kicker, right)}<h3 class="pg-h">{heading}</h3><p class="pg-deck">{deck}</p>{media}{after}</div>', section)
+
+
+def contact_page():
+    return Page(f'''<div class="pg">{top("Back cover", "Bookings &amp; collabs")}
+  <div class="contact-links">
+    <a href="mailto:info@jinkojoshu.com">info@jinkojoshu.com</a>
+    <a href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Instagram — @jinkojoshu ↗</a>
+    <span class="jp">ジンコ・ジョシュ</span>
+  </div>
+</div>''' + giant(["Work", "with me"], "Work with me"), None, "dark", "52%")
+
+
+# ───────────────────────── page shell ─────────────────────────
+FONTS = ("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,800..900"
+         "&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700"
+         "&family=Inter+Tight:wght@400;500;600&family=Noto+Sans+JP:wght@500&display=swap")
+
+
+def head(title, desc, body_class=""):
+    return f'''<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Jinko Joshu — Magazine Nº01</title>
-  <meta name="description" content="Jinko Joshu — Amsterdam-based performer. Commercials, lookbook, dance, styling and the label Akyna.">
-  <meta property="og:title" content="Jinko Joshu — Nº01">
+  <title>{e(title)}</title>
+  <meta name="description" content="{e(desc)}">
+  <meta property="og:title" content="{e(title)}">
   <meta property="og:image" content="assets/img/jinko-portrait.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Noto+Sans+JP:wght@700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+  <link href="{FONTS}" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<div class="paper">
+<body class="{body_class}">
+'''
 
-<!-- ───────── Cover ───────── -->
-<section id="cover" class="wrap cover">
-  <div class="kicker rule-b">
-    <span>Issue Nº01 — Autumn 2026</span>
-    <span class="hide-sm">Commercials · Lookbook · Dance · Styling · Akyna</span>
-    <a class="kick-link" href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Amsterdam · @jinkojoshu</a>
-  </div>
 
-  <h1 class="masthead">Jinko Joshu</h1>
-
-  <div class="cover-reel">
-    <video id="reel" muted playsinline autoplay poster="assets/poster/reel.jpg" aria-label="Showreel: short moments from Jinko Joshu's work"></video>
-    <span class="tag tag-accent"><span class="jp">創刊号</span>First issue</span>
-  </div>
-
-  <nav class="strip" aria-label="In this issue">
-    <a class="cl" href="#commercials"><span class="no">01</span><span class="nm">Commercials</span><span class="sb">Nike · Samsung · bol × JBL</span></a>
-    <a class="cl" href="#lookbook"><span class="no">02</span><span class="nm">Lookbook</span><span class="sb">In front of the lens</span></a>
-    <a class="cl" href="#dance"><span class="no">03</span><span class="nm">Dance</span><span class="sb">Madonna · Ghetto Funk</span></a>
-    <a class="cl" href="#styling"><span class="no">04</span><span class="nm">Styling</span><span class="sb">Coast Contra — Don’t Worry</span></a>
-    <a class="cl" href="#akyna"><span class="no">05</span><span class="nm">Akyna</span><span class="sb">The label</span></a>
-    <a class="cl" href="#contact"><span class="no">06</span><span class="nm">Work with me</span><span class="sb">Bookings &amp; collabs</span></a>
-  </nav>
-
-  <div class="cover-foot">
-    <span class="jp jp-sign">ジンコ・ジョシュ</span>
-    <div class="barcode" aria-hidden="true"></div>
-  </div>
-</section>
-
-<!-- ───────── Contents ───────── -->
-<section id="contents" class="wrap section">
-  <div class="spread">
-    <div class="col">
-      <div class="head-row rule-b">
-        <h2 class="h-sec">Contents</h2>
-        <span class="meta">Nº01</span>
-      </div>
-      <div class="toc-list">
-        <a class="toc" href="#commercials"><span>04</span><b>Commercials</b><span>Campaigns</span></a>
-        <a class="toc" href="#lookbook"><span>12</span><b>Lookbook</b><span>In front of the lens</span></a>
-        <a class="toc" href="#photography"><span>16</span><b>Through my lens</b><span>Photography</span></a>
-        <a class="toc" href="#dance"><span>20</span><b>Dance</b><span>Madonna · Claude</span></a>
-        <a class="toc" href="#tgs"><span>22</span><b>The Greatest Show</b><span>Nanjing, China</span></a>
-        <a class="toc" href="#yade"><span>24</span><b>Yade Lauren</b><span>Festival show</span></a>
-        <a class="toc" href="#ghettofunk"><span>26</span><b>Ghetto Funk</b><span>The collective</span></a>
-        <a class="toc" href="#styling"><span>30</span><b>Styling</b><span>Projects</span></a>
-        <a class="toc" href="#akyna"><span>36</span><b>Akyna</b><span>The label</span></a>
-        <a class="toc" href="#contact"><span>40</span><b>Work with me</b><span>Contact</span></a>
-      </div>
-      <div class="who">
-        <span class="who-h">Who is Jinko Joshu?</span>
-        <p>An Amsterdam-based performer working in commercials and campaigns. Jinko also dances on stage and at events, choreographs, shoots photography, styles — and runs the clothing label Akyna.</p>
-      </div>
-      <div class="box awards">
-        <span class="box-h">Awards</span>
-        <div class="dl"><span>Lucid Dreaming</span><i></i><span>Gouden Kalf competition</span></div>
-        <div class="dl"><span>Coast Contra — Don’t Worry</span><i></i><span>Berlin Music Video Awards</span></div>
-      </div>
-    </div>
-    <figure class="look">
-      <div class="look-frame">
-        <img src="assets/mag/halftone-portrait.png" alt="Jinko Joshu, full-length halftone portrait">
-        <span class="look-no">Look<br>01</span>
-        <span class="jp look-jp">ジンコ・ジョシュ</span>
-      </div>
-      <figcaption class="meta-row"><span>Jinko Joshu</span><span>Look 01/21</span></figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- ───────── 01 · Commercials ───────── -->
-<section id="commercials" class="wrap section">
-  <div class="meta-row"><span>Feature 01</span><span>p. 04</span></div>
-  <h2 class="h-feature">Commercials</h2>
-  <div class="comm">
-    <div class="cards">
-{commercials_html}
-    </div>
-    <aside class="box">
-      <span class="box-h">Selected work</span>
-      <div class="dl"><span>Nike — Member Days</span><i></i><span>(2023)</span></div>
-      <div class="dl"><span>Lucid Dreaming</span><i></i><span>(2023)</span></div>
-      <div class="dl"><span>Samsung — Galaxy Z Flip6</span><i></i><span>(2024)</span></div>
-      <div class="dl"><span>Philips</span><i></i><span>(2025)</span></div>
-      <div class="dl"><span>Lavish</span><i></i><span>(2025)</span></div>
-      <div class="dl"><span>Foot Athletes</span><i></i><span>(2025)</span></div>
-      <div class="dl"><span>Claude — C’est La Vie</span><i></i><span>(2025)</span></div>
-      <div class="dl"><span>bol × JBL</span><i></i><span>(2026)</span></div>
-      <div class="dl"><span>Madonna — Confessions II</span><i></i><span>(Film)</span></div>
-      <span class="box-note">★ Lucid Dreaming — Gouden Kalf competition.</span>
-    </aside>
-  </div>
-</section>
-
-<!-- ───────── 02 · Lookbook ───────── -->
-<section id="lookbook" class="wrap section">
-  <div class="meta-row"><span>Feature 02</span><span>p. 12</span></div>
-  <h2 class="h-feature">Lookbook</h2>
-  <p class="deck deck-wide">In front of the lens — campaigns, editorials and polaroids.</p>
-  <div class="wall">
-{prints(LOOKBOOK)}
-  </div>
-
-  <div id="photography" class="sub">
-    <div class="meta-row"><span>Feature 02.1</span><span>p. 16</span></div>
-    <div class="head-row rule-b"><h3 class="h-sec">Through my lens</h3><span class="meta">Shot by Jinko · film</span></div>
-    <div class="wall">
-{prints([(s, "Film", "Shot by Jinko Joshu") for s in PHOTOGRAPHY])}
-    </div>
-  </div>
-</section>
-
-<!-- ───────── 03 · Dance ───────── -->
-<section id="dance" class="wrap section">
-  <div class="meta-row"><span>Feature 03</span><span>p. 20</span></div>
-  <h2 class="h-feature">Dance</h2>
-
-  <div class="highlight">
-    <button class="card" data-youtube="yJtckcMHM2g" data-start="415" data-caption="Madonna — Confessions II, The Film · Jinko from 06:55">
-      <div class="cardimg r-169">
-        <img src="assets/yt/yJtckcMHM2g.jpg" alt="" loading="lazy">
-        <span class="no">Highlight</span><span class="play">▶</span>
-        <span class="timestamp">▶ 06:55</span>
-      </div>
-    </button>
-    <div class="highlight-text">
-      <span class="meta">Music video · Madonna</span>
-      <span class="feat-h">Confessions II</span>
-      <p class="deck">Dancer in Madonna’s <i>Confessions II — The Film</i>. My part starts at 06:55; the player jumps straight there.</p>
-      <button class="more-btn" data-youtube="yJtckcMHM2g" data-start="415" data-caption="Madonna — Confessions II, The Film · Jinko from 06:55">Watch from 06:55 →</button>
-    </div>
-  </div>
-
-  <div class="highlight highlight-rev">
-    <div class="highlight-text">
-      <span class="meta">Music video · Eurovision 2025</span>
-      <span class="feat-h">Claude — C’est La Vie</span>
-      <p class="deck">Dancer in the official music video for Claude’s <i>C’est La Vie</i>, the Netherlands’ entry for Eurovision 2025.</p>
-      <button class="more-btn" data-youtube="hEHwr5k9pd0" data-caption="Claude — C’est La Vie · Official Music Video · Eurovision 2025">Watch →</button>
-    </div>
-    <button class="card" data-youtube="hEHwr5k9pd0" data-caption="Claude — C’est La Vie · Official Music Video · Eurovision 2025">
-      <div class="cardimg r-169"><img src="assets/yt/hEHwr5k9pd0.jpg" alt="" loading="lazy"><span class="no">Eurovision</span><span class="play">▶</span></div>
-    </button>
-  </div>
-
-  <!-- Project: The Greatest Show -->
-  <article id="tgs" class="project">
-    <div class="project-text">
-      <span class="meta">Project · Nanjing, China</span>
-      <h3 class="feat-h">The Greatest Show</h3>
-      <p class="deck">We were invited to Nanjing to create a two-hour show — and to dance in it ourselves, alongside 170 guest dancers from China. A challenge both as choreographer and as dancer.</p>
-      <span class="roles"><span>Choreographer</span><span>Dancer</span></span>
-    </div>
-    <div class="project-media">
-      <button class="card tile-wide" data-video="assets/video/dance-performance.mp4" data-caption="The Greatest Show — Nanjing">
-        <div class="cardimg r-169"><img src="assets/thumbs/dance-performance.jpg" alt="" loading="lazy"><span class="no">Film</span><span class="play">▶</span></div>
-      </button>
-{media_grid(TGS_PHOTOS, "The Greatest Show — Nanjing, China")}
-    </div>
-  </article>
-
-  <!-- Project: Yade Lauren -->
-  <article id="yade" class="project">
-    <div class="project-text">
-      <span class="meta">Project · Festival show</span>
-      <h3 class="feat-h">Yade Lauren</h3>
-      <p class="deck">Yade Lauren asked me to join her show as a performer. We played a festival together and brought more of a fashion vibe to her set.</p>
-      <span class="roles"><span>Performer</span></span>
-    </div>
-    <div class="project-media">
-{media_grid(YADE_PHOTOS, "Yade Lauren — festival show")}
-    </div>
-  </article>
-
-  <div class="sub">
-    <div class="head-row rule-b"><h3 class="h-sec">More dance</h3><span class="meta">Stage · sessions · collabs</span></div>
-    <div class="cards cards-3">
-{video_card("JMD", "Stage", "dance-jmd", "dance-jmd", ratio="r-169", no="JMD")}
-{video_card("Dam Square", "Street session · Amsterdam", "dance-footage", "dance-footage", ratio="r-169", no="Session")}
-{video_card("Hashna", "Collab", "dance-hashna", "dance-hashna", ratio="r-169", no="Collab")}
-    </div>
-  </div>
-
-  <!-- Sub-category: Ghetto Funk Collective -->
-  <div id="ghettofunk" class="sub">
-    <div class="meta-row"><span>Feature 03.1</span><span>p. 26</span></div>
-    <div class="head-row rule-b">
-      <h3 class="h-sec">Ghetto Funk Collective</h3>
-      <span class="badge">Member of the collective</span>
-    </div>
-    <div class="gf">
-{yt_card("0otuG_RO1mI", "“Just Feel”", "10 year anniversary", "GF/01", "“Just Feel” — 10 year anniversary, Ghetto Funk Collective")}
-{yt_card("oVR1SJvekRw", "Damn Right", "We Are Somebody", "GF/02", "Ghetto Funk Collective — Damn Right We Are Somebody")}
-{yt_card("CV84FmeBRbU", "Keep On Lovin’ Me", "The Whispers", "GF/03", "Ghetto Funk Collective — Keep On Lovin’ Me (The Whispers)")}
-{video_card("Mexico", "Teaser", "gf-mexico", "gf-mexico", ratio="r-169", no="GF/04", caption="Ghetto Funk Collective — Mexico teaser")}
-{video_card("James Brown", "Studio session", "gf-james-brown", "gf-james-brown", ratio="r-169", no="GF/05", caption="Ghetto Funk Collective — James Brown session")}
-{photo_card("ghetto-funk-01", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic")}
-{photo_card("ghetto-funk-02", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic")}
-    </div>
-  </div>
-</section>
-
-<!-- ───────── 04 · Styling ───────── -->
-<section id="styling" class="wrap section">
-  <div class="meta-row"><span>Feature 04</span><span>p. 30</span></div>
-  <h2 class="h-feature">Styling</h2>
-  <div class="highlight">
-    <button class="card" data-youtube="NjRvXjSHze4" data-caption="Coast Contra — Don’t Worry (Official Music Video) · Styling">
-      <div class="cardimg r-169"><img src="assets/yt/NjRvXjSHze4.jpg" alt="" loading="lazy"><span class="no">Music video</span><span class="play">▶</span><span class="award">★ Berlin Music Video Awards</span></div>
-    </button>
-    <div class="highlight-text">
-      <span class="meta">Styling · Coast Contra</span>
-      <span class="feat-h">Don’t Worry</span>
-      <p class="deck">Styling for Coast Contra’s official music video “Don’t Worry”.</p>
-      <button class="more-btn" data-youtube="NjRvXjSHze4" data-caption="Coast Contra — Don’t Worry (Official Music Video) · Styling">Watch →</button>
-    </div>
-  </div>
-  <div class="wall wall-3">
-{prints([(s, n, "Styling — Coast Contra, Don’t Worry") for s, n in STYLING_PHOTOS])}
-  </div>
-</section>
-
-<!-- ───────── 05 · Akyna ───────── -->
-<section class="wrap section">
-  <a class="feat feat-accent feat-wide" id="akyna" href="https://akyna-project.com/" target="_blank" rel="noopener">
-    <div class="feat-text">
-      <span class="meta">Feature 05 · p. 36</span>
-      <span class="feat-h">Akyna</span>
-      <span class="feat-deck">Akyna is the brand I started together with Pasqual. From production to design, we do everything ourselves.</span>
-      <span class="more">akyna-project.com ↗</span>
-    </div>
-    <div class="feat-img akyna-word"><span>AKYNA</span></div>
-  </a>
-</section>
-
-<!-- ───────── Back cover · Work with me ───────── -->
-<footer id="contact" class="back">
-  <div class="wrap back-in">
-    <div class="kicker rule-b-light"><span>Back cover</span><span>Bookings &amp; collabs</span></div>
-    <a class="book" href="mailto:info@jinkojoshu.com">Work with me</a>
-    <div class="back-foot">
-      <div class="col-s">
-        <a href="mailto:info@jinkojoshu.com">info@jinkojoshu.com</a>
-        <a href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Instagram — @jinkojoshu ↗</a>
-      </div>
-      <span class="jp">ジンコ・ジョシュ</span>
-      <div class="col-s right">
-        <div class="barcode light" aria-hidden="true"></div>
-        <span class="tiny">Nº01 · <span id="year">2026</span> · Amsterdam</span>
-      </div>
-    </div>
-  </div>
-</footer>
-
-</div>
-
+LIGHTBOX = '''
 <dialog id="lightbox">
   <div class="lb-bar"><span class="lb-cap"></span><a class="lb-yt" target="_blank" rel="noopener" hidden>Open on YouTube ↗</a><button class="lb-close" aria-label="Close">Close ×</button></div>
   <div class="lb-body"></div>
@@ -377,5 +197,213 @@ page = f'''<!doctype html>
 </html>
 '''
 
-Path(__file__).resolve().parent.parent.joinpath("site", "index.html").write_text(page)
-print("index.html written")
+
+def topbar(active):
+    cur = ' aria-current="page"'
+    nav = "".join(f'<a href="{h}"{cur if h == active else ""}>{no} {e(name)}</a>' for h, no, name, *_ in ISSUES)
+    return f'''<header class="topbar">
+  <a class="tb-home" href="index.html">← Cover</a>
+  <a class="tb-name" href="index.html">Jinko Joshu</a>
+  <nav class="tb-nav" aria-label="Issues">{nav}</nav>
+  <a class="tb-mail" href="mailto:info@jinkojoshu.com">Work with me</a>
+</header>
+'''
+
+
+def magazine(filename, title, desc, pages, next_href, next_label):
+    """Pairs pages into spreads; the reader shows one spread at a time (stacked on phones)."""
+    if len(pages) % 2:
+        pages.append(contact_page())
+    seen, chips, spreads = set(), [], []
+    for i in range(0, len(pages), 2):
+        sides = []
+        for side, p, n in (("page-l", pages[i], i + 1), ("page-r", pages[i + 1], i + 2)):
+            anchor = ""
+            if p.section and p.section[0] not in seen:
+                seen.add(p.section[0])
+                anchor = f' id="{p.section[0]}"'
+                chips.append(f'<a href="#{p.section[0]}" data-chip="{p.section[0]}">{e(p.section[1])}</a>')
+            style = f' style="--band:{p.band}"' if p.band else ""
+            sides.append(f'<div class="page {side} {p.cls}"{anchor}{style}>{p.html}<span class="pno">{n:02d}</span></div>')
+        section = (pages[i].section or pages[i + 1].section or ("",))[0]
+        spreads.append(f'<article class="mag spread" id="s{i // 2 + 1}" data-section="{section}">\n{sides[0]}\n{sides[1]}\n</article>')
+
+    return head(title, desc, "inside") + topbar(filename) + f'''
+<main class="reader" data-next="{next_href}" data-next-label="{e(next_label)}">
+  <div class="stage">
+    <button class="turn turn-prev"><span class="arrow" aria-hidden="true">←</span><span class="tl">Cover</span></button>
+    <div class="spreads">
+{chr(10).join(spreads)}
+    </div>
+    <button class="turn turn-next"><span class="arrow" aria-hidden="true">→</span><span class="tl">Next</span></button>
+  </div>
+  <div class="reader-foot">
+    <nav class="chips" aria-label="In this issue">{"".join(chips)}</nav>
+    <span class="count" aria-live="polite"></span>
+  </div>
+</main>
+''' + LIGHTBOX
+
+
+# ───────────────────────── Nº01 Commercials & Lookbook ─────────────────────────
+C = ("commercials", "Commercials")
+L = ("lookbook", "Lookbook")
+
+cards = [card(c, no=f"{i:02d}") for i, c in enumerate(COMMERCIALS, 1)]
+brands = "".join(f'<div class="brand"><b>{e(b)}</b><span>{e(y)}</span></div>' for b, y in BRANDS)
+
+issue1 = [
+    Page(f'<div class="pg">{top("Issue Nº01 · Commercials", "01 — 04")}<h2 class="pg-title">Commercials</h2>{grid(cards[:4], 2, 2)}</div>', C),
+    Page(f'<div class="pg">{top("Commercials", "05 — 08")}{grid(cards[4:], 2, 2)}</div>', C),
+    Page(f'<div class="pg">{top("New", "Nike × Victor Wembanyama")}<h3 class="pg-h">Nike × Wemby</h3>'
+         f'<p class="pg-deck">Basketball, choreographed — a vertical film for Nike with Victor Wembanyama.</p>'
+         f'<div class="feature-v">{card(WEMBY, no="09")}</div></div>', C),
+    Page(f'''<div class="pg">{top("Selected work", "2023 — 2026")}<h3 class="pg-h">Worked with</h3>
+  <div class="brands">{brands}</div>
+  <span class="pg-note">★ Lucid Dreaming — Gouden Kalf competition · Coast Contra — Berlin Music Video Awards</span></div>''', C),
+    opener_page(L, "Issue Nº01 · Lookbook", "Lookbook", "In front of the lens — campaigns, editorials and film.", 2, LB[2]),
+    bleed_page(L, 5, LB[5]),
+    bleed_page(L, 9, LB[9]),
+    framed_page(L, "Lookbook", 8, LB[8]),
+    framed_page(L, "Lookbook", 10, LB[10]),
+    bleed_page(L, 11, LB[11]),
+    framed_page(L, "Lookbook", 13, LB[13]),
+    bleed_page(L, 15, LB[15]),
+    pair_page(L, "Lookbook", (17, LB[17]), (19, LB[19])),
+    framed_page(L, "Lookbook", 21, LB[21]),
+]
+
+# ───────────────────────── Nº02 Dance ─────────────────────────
+MV = ("musicvideos", "Music videos")
+T = ("tgs", "The Greatest Show")
+Y = ("yade", "Yade Lauren")
+M = ("moredance", "More dance")
+G = ("ghettofunk", "Ghetto Funk")
+
+issue2 = [
+    Page(f'<div class="pg">{top("Issue Nº02 · Dance", "Music videos")}<h2 class="pg-title">Music videos</h2>'
+         + grid([yt_card("yJtckcMHM2g", "Madonna — Confessions II", "The Film · my part starts at 06:55", "Madonna",
+                         "Madonna — Confessions II, The Film · Jinko from 06:55", start=415, stamp="06:55"),
+                 yt_card("hEHwr5k9pd0", "Claude — C’est La Vie", "Official music video · Eurovision 2025", "Eurovision",
+                         "Claude — C’est La Vie · Official Music Video · Eurovision 2025")], 1, 2) + '</div>', MV),
+    feature_page(T, "Project · Nanjing, China", "Choreographer · Dancer", "The Greatest Show",
+                 "We were invited to Nanjing to create a two-hour show — and to dance in it ourselves, alongside 170 guest dancers from China. A challenge both as choreographer and as dancer.",
+                 grid([tile(TGS_PHOTOS[0], "The Greatest Show — Nanjing, China").replace('class="tile"', 'class="tile span-all"')]
+                      + [tile(s, "The Greatest Show — Nanjing, China") for s in TGS_PHOTOS[1:]], 2, tpl="3fr 2fr")),
+    feature_page(Y, "Project · Festival show", "Performer", "Yade Lauren",
+                 "Yade Lauren asked me to join her show as a performer. We played a festival together and brought more of a fashion vibe to her set.",
+                 grid([tile(s, "Yade Lauren — festival show") for s in YADE_PHOTOS], 2, 2)),
+    Page(f'<div class="pg">{top("More dance", "Films · stage · sessions")}<h3 class="pg-h">More dance</h3>'
+         + grid([card(dict(title="On the bridge", sub="Dance film", thumb="dance-performance", video="dance-performance"), no="Film"),
+                 card(dict(title="JMD", sub="Stage", thumb="dance-jmd", video="dance-jmd"), no="Stage"),
+                 card(dict(title="Dam Square", sub="Street session · Amsterdam", thumb="dance-footage", video="dance-footage"), no="Session"),
+                 card(dict(title="Hashna", sub="Collab", thumb="dance-hashna", video="dance-hashna"), no="Collab")], 2, 2) + '</div>', M),
+    Page(f'<div class="pg">{top("The collective", "<b class=badge>Member</b>")}<h3 class="pg-h">Ghetto Funk Collective</h3>'
+         + grid([yt_card("0otuG_RO1mI", "“Just Feel”", "10 year anniversary", "GF/01", "“Just Feel” — 10 year anniversary, Ghetto Funk Collective"),
+                 yt_card("oVR1SJvekRw", "Damn Right", "We Are Somebody", "GF/02", "Ghetto Funk Collective — Damn Right We Are Somebody"),
+                 yt_card("CV84FmeBRbU", "Keep On Lovin’ Me", "The Whispers", "GF/03", "Ghetto Funk Collective — Keep On Lovin’ Me (The Whispers)")], 1, 3) + '</div>', G),
+    Page(f'<div class="pg">{top("Ghetto Funk Collective", "GF/04 — 07")}'
+         + grid([card(dict(title="Mexico", sub="Teaser", thumb="gf-mexico", video="gf-mexico", caption="Ghetto Funk Collective — Mexico teaser"), no="GF/04"),
+                 card(dict(title="James Brown", sub="Studio session", thumb="gf-james-brown", video="gf-james-brown", caption="Ghetto Funk Collective — James Brown session"), no="GF/05"),
+                 photo_card("ghetto-funk-01", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic"),
+                 photo_card("ghetto-funk-02", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic")], 2, 2) + '</div>', G),
+]
+
+# ───────────────────────── Nº03 Styling ─────────────────────────
+S = ("styling", "Styling")
+A = ("akyna", "Akyna")
+COAST = 'data-youtube="NjRvXjSHze4" data-caption="Coast Contra — Don’t Worry (Official Music Video) · Styling"'
+CC = "Styling — Coast Contra, Don’t Worry"
+
+issue3 = [
+    title_page(S, "Issue Nº03", ["Styling"], "Styling for music videos and shoots — and Akyna, the label I run with Pasqual.", band="40%"),
+    feature_page(S, "Styling · Coast Contra", "Music video", "Don’t Worry",
+                 "Styling for Coast Contra’s official music video “Don’t Worry”.",
+                 f'<button class="card" {COAST}><div class="cardimg r-169"><img src="assets/yt/NjRvXjSHze4.jpg" alt="" loading="lazy"><span class="no">Music video</span><span class="play">▶</span><span class="award">★ Berlin Music Video Awards</span></div></button>',
+                 f'<button class="more-btn" {COAST}>Watch →</button>'),
+    Page(f'<div class="pg">{top("Coast Contra — Don’t Worry", "On set")}'
+         f'<div class="ph-pair ph-stack">{photo(1, "coast-contra-01", CC)}{photo(2, "coast-contra-03", CC)}</div></div>', S),
+    Page(f'''<div class="pg">{top("Feature 03.1", "The label")}
+  <p class="pg-deck">Akyna is the brand I started together with Pasqual. From production to design, we do everything ourselves.</p>
+  <a class="more-btn" href="https://akyna-project.com/" target="_blank" rel="noopener">akyna-project.com ↗</a>
+</div>''' + giant(["Akyna"], "Akyna", cls="wide"), A, "accent", "40%"),
+]
+
+# ───────────────────────── Nº04 Through my lens ─────────────────────────
+P = ("lens", "Through my lens")
+
+issue4 = [
+    opener_page(P, "Issue Nº04 · Photography", "Through my lens", "My own photography — shot on film.", 1, PHOTO[1]),
+    bleed_page(P, 2, PHOTO[2]),
+    pair_page(P, "Through my lens", (3, PHOTO[3]), (4, PHOTO[4])),
+    bleed_page(P, 5, PHOTO[5]),
+    framed_page(P, "Through my lens", 6, PHOTO[6]),
+    bleed_page(P, 7, PHOTO[7]),
+    pair_page(P, "Through my lens", (8, PHOTO[8]), (10, PHOTO[10])),
+    pair_page(P, "Through my lens", (9, PHOTO[9]), (11, PHOTO[11]), stack=True),
+    bleed_page(P, 12, PHOTO[12]),
+    framed_page(P, "Through my lens", 13, PHOTO[13]),
+    framed_page(P, "Through my lens", 14, PHOTO[14]),
+]
+
+
+# ───────────────────────── Cover (index.html) ─────────────────────────
+def mini(href, no, name, mast, img, focus, cap):
+    return f'''    <a class="mini" href="{href}">
+      <div class="mini-cover">
+        <span class="mini-mast"><span class="fit">{e(mast)}</span></span>
+        <img src="assets/img/{img}-sm.jpg" alt="" style="object-position: {focus}">
+        <span class="mini-no">{e(no)}</span>
+      </div>
+      <span class="mini-cap"><b>{e(name)}</b>{e(cap)}</span>
+    </a>'''
+
+
+index = head("Jinko Joshu — Magazine Nº01",
+             "Jinko Joshu — Amsterdam-based performer. Commercials, dance, styling, photography and the label Akyna.", "home") + f'''
+<main class="desk">
+  <article class="mag cover-mag" aria-label="Issue Nº01 — showreel">
+    <div class="page page-l" style="--band:56%">
+      <span class="folio">Jinko Joshu — Issue Nº01</span>
+      <span class="credit">Showreel · Autumn 2026</span>
+      {giant(["Jinko", "Joshu"], "Jinko Joshu", tag="h1")}
+      <img class="silhouette" src="assets/mag/halftone-portrait.png" alt="">
+    </div>
+    <div class="page page-r" style="--band:56%">
+      <span class="folio folio-r">Amsterdam · @jinkojoshu</span>
+      <a class="open-issue" href="commercials.html"><span>Open the issue</span><b>Commercials &amp; Lookbook →</b></a>
+      <div class="reel-wrap">
+        <video id="reel" muted playsinline autoplay poster="assets/poster/reel.jpg" aria-label="Showreel: short moments from Jinko Joshu's work"></video>
+        <button class="sound" aria-pressed="false"><span class="sound-ico" aria-hidden="true"></span><span class="sound-txt">Sound on</span></button>
+      </div>
+    </div>
+  </article>
+
+  <nav class="shelf" aria-label="More issues">
+{chr(10).join(mini(*m) for m in ISSUES[1:])}
+  </nav>
+
+  <footer class="desk-foot">
+    <a href="mailto:info@jinkojoshu.com">Work with me — info@jinkojoshu.com</a>
+    <a href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Instagram ↗</a>
+    <a href="https://akyna-project.com/" target="_blank" rel="noopener">Akyna ↗</a>
+  </footer>
+</main>
+''' + LIGHTBOX
+
+site = Path(__file__).resolve().parent.parent / "site"
+out = {
+    "index": index,
+    "commercials": magazine("commercials.html", "Commercials & Lookbook — Jinko Joshu",
+                            "Commercials, campaigns and the lookbook of Jinko Joshu.", issue1, "dance.html", "Nº02 Dance"),
+    "dance": magazine("dance.html", "Dance — Jinko Joshu",
+                      "Jinko Joshu as dancer and choreographer: Madonna, Claude, The Greatest Show, Yade Lauren and Ghetto Funk Collective.",
+                      issue2, "styling.html", "Nº03 Styling"),
+    "styling": magazine("styling.html", "Styling — Jinko Joshu",
+                        "Styling by Jinko Joshu: Coast Contra — Don’t Worry, and the label Akyna.", issue3, "photography.html", "Nº04 Lens"),
+    "photography": magazine("photography.html", "Through my lens — Jinko Joshu",
+                            "Photography by Jinko Joshu, shot on film.", issue4, "index.html", "Cover"),
+}
+for name, html in out.items():
+    (site / f"{name}.html").write_text(html)
+print(", ".join(f"{n}.html" for n in out), "written")

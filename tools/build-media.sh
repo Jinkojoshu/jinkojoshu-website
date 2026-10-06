@@ -76,5 +76,10 @@ for id in NjRvXjSHze4 yJtckcMHM2g oVR1SJvekRw CV84FmeBRbU 0otuG_RO1mI hEHwr5k9pd
   [[ -f site/assets/yt/$id.jpg ]] || curl -s -o site/assets/yt/$id.jpg https://i.ytimg.com/vi/$id/maxresdefault.jpg
 done
 
-# Commercial/dance thumbnails in site/assets/thumbs are hand-picked frames (frames where Jinko is visible).
+# Commercial/dance thumbnails in site/assets/thumbs are hand-picked frames where Jinko is visible.
+# To change one, pick a time from a contact sheet and grab that frame:
+#   swift tools/frames.swift sheet site/assets/video/samsung.mp4 /tmp/sheet.jpg 24
+#   swift tools/frames.swift frame site/assets/video/samsung.mp4 site/assets/thumbs/samsung.jpg 3.6
+# Current picks (seconds): samsung 3.6 · lavish 20.6 · philips 14.3 · taf 71.6 · lucid 6.4 · nikebts 2.8
+# wemby.jpg is the Vimeo poster of video 1175554062.
 echo done
