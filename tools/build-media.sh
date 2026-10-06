@@ -69,7 +69,19 @@ n=0; for f in "dans jobs/The greatest show"/*;      do n=$((n+1)); img "$f" tgs-
 n=0; for f in "dans jobs/Yade Lauren - show"/*;     do n=$((n+1)); img "$f" yade-0$n; done
 n=0; for f in "styling/Styling coast contra "/*;    do n=$((n+1)); img "$f" coast-contra-0$n; done
 # Photography by Jinko (numbered in folder order)
-n=0; for f in PHOTOGRAPHY/*;                        do n=$((n+1)); img "$f" photography-$(printf %02d $n); done
+
+# Added 2026-10-06 (named explicitly so new files never shift the numbering above)
+img "styling/Styling coast contra /Cover styling.JPEG"             styling-cover
+n=0; for f in Akyna/*.jpg;                          do n=$((n+1)); img "$f" akyna-0$n; done
+img "styling/Groove - GFC ruggeds/IMG_2411.HEIC"                   groove-01
+img "styling/Groove - GFC ruggeds/IMG_2459.HEIC"                   groove-02
+[[ -f $V/groove.mp4 ]] || avconvert -s "styling/Groove - GFC ruggeds/IMG_6684.MOV" -p Preset1280x720 -o $V/groove.mp4 --replace
+# "On film" magazine: every photo in PHOTOGRAPHY (files only) + the polaroids in their own folder
+n=0; for f in PHOTOGRAPHY/*(.);                     do n=$((n+1)); img "$f" onfilm-$(printf %02d $n); done
+n=0; for f in "PHOTOGRAPHY/Polaroids one page"/*;   do n=$((n+1)); img "$f" pola-$(printf %02d $n); done
+# Showreel soundtrack
+mkdir -p site/assets/audio
+[[ -f site/assets/audio/showreel.m4a ]] || avconvert -s "Showreel track website  .mp3" -p PresetAppleM4A -o site/assets/audio/showreel.m4a --replace
 
 # YouTube thumbnails
 for id in NjRvXjSHze4 yJtckcMHM2g oVR1SJvekRw CV84FmeBRbU 0otuG_RO1mI hEHwr5k9pd0; do
@@ -80,6 +92,6 @@ done
 # To change one, pick a time from a contact sheet and grab that frame:
 #   swift tools/frames.swift sheet site/assets/video/samsung.mp4 /tmp/sheet.jpg 24
 #   swift tools/frames.swift frame site/assets/video/samsung.mp4 site/assets/thumbs/samsung.jpg 3.6
-# Current picks (seconds): samsung 3.6 · lavish 20.6 · philips 14.3 · taf 71.6 · lucid 6.4 · nikebts 2.8
+# Current picks (seconds): samsung 3.6 · lavish 20.6 · philips 2.3 · taf 69.8 · lucid 6.4 · nikebts 2.8 · groove 11.5
 # wemby.jpg is the Vimeo poster of video 1175554062.
 echo done

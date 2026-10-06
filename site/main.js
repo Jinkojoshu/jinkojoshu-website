@@ -2,9 +2,12 @@
 const reel = document.getElementById('reel');
 if (reel) {
   const reelClips = Array.from({ length: 11 }, (_, i) => `assets/reel/reel-${String(i + 1).padStart(2, '0')}.mp4`);
+  // where to aim the crop per clip (default: centre) — clip 2 (Madonna) is aimed at Jinko turning on the right
+  const reelFocus = { 1: '75% 40%' };
   let reelIndex = 0;
   const playReel = () => {
     reel.src = reelClips[reelIndex];
+    reel.style.objectPosition = reelFocus[reelIndex] || '';
     reel.play().catch(() => {});
   };
   reel.addEventListener('ended', () => {
@@ -13,14 +16,37 @@ if (reel) {
   });
   playReel();
 
-  // Sound: browsers never autoplay with sound, so the visitor switches it on.
+  // Sound: the showreel track. Browsers never autoplay with sound, so the visitor switches it on.
+  const track = document.getElementById('reel-audio');
   const sound = document.querySelector('.sound');
   sound.addEventListener('click', () => {
-    reel.muted = !reel.muted;
-    sound.setAttribute('aria-pressed', String(!reel.muted));
-    sound.querySelector('.sound-txt').textContent = reel.muted ? 'Sound on' : 'Sound off';
-    reel.play().catch(() => {});
+    const on = track.paused;
+    if (on) track.play().catch(() => {}); else track.pause();
+    sound.setAttribute('aria-pressed', String(on));
+    sound.querySelector('.sound-txt').textContent = on ? 'Sound off' : 'Sound on';
   });
+
+  // Opening the issue: the cover's right page turns over before the magazine opens.
+  const coverMag = document.querySelector('.cover-mag');
+  document.querySelectorAll('.open-issue').forEach((link) => link.addEventListener('click', (ev) => {
+    if (matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)').matches) return;
+    ev.preventDefault();
+    const right = coverMag.querySelector('.page-r').cloneNode(true);
+    right.querySelectorAll('video, audio').forEach((m) => m.removeAttribute('src'));
+    const blank = document.createElement('div');
+    blank.className = 'page page-l';
+    const mk = (cls, ...kids) => { const d = document.createElement('div'); d.className = cls; d.append(...kids); return d; };
+    const front = mk('face front', right, mk('shade'));
+    const back = mk('face back', blank, mk('shade'));
+    const leaf = mk('flipper from-r', front, back);
+    coverMag.append(mk('flip-layer', leaf));
+    const t = { duration: 850, easing: 'cubic-bezier(.42,.02,.28,1)', fill: 'forwards' };
+    leaf.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(-90deg) translateZ(30px)', offset: .5 }, { transform: 'rotateY(-180deg)' }], t);
+    front.lastChild.animate([{ opacity: 0 }, { opacity: 1, offset: .5 }, { opacity: 1 }], t);
+    back.lastChild.animate([{ opacity: 1 }, { opacity: 1, offset: .5 }, { opacity: 0 }], t);
+    try { sessionStorage.setItem('arrive', '1'); } catch (_) { /* private mode */ }
+    setTimeout(() => { location.href = link.href; }, 800);
+  }));
 }
 
 // Giant stacked letters: scale them to the band's width, then stretch them tall to fill its height.
@@ -164,6 +190,9 @@ if (reader) {
   paged.addEventListener('change', setMode);
   setMode();
   addEventListener('hashchange', () => { const i = indexOf(location.hash.slice(1)); if (i >= 0 && i !== cur) go(i); });
+  try {
+    if (sessionStorage.getItem('arrive')) { sessionStorage.removeItem('arrive'); reader.classList.add('arrive'); }
+  } catch (_) { /* private mode */ }
   cur = Math.max(0, indexOf(location.hash.slice(1)));
   show(cur);
 }

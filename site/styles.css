@@ -70,6 +70,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
 }
 .span-all { grid-column: 1 / -1; }
+.span-rows { grid-row: span 2; }
+.pg-deck-s { font-size: max(12px, 2.45cqw); }
 .badge { background: var(--accent); color: var(--ink); padding: 3px 7px; font-weight: 600; }
 .roles { display: flex; gap: 8px; flex-wrap: wrap; }
 .roles span { border: var(--rule); padding: 4px 9px; font-size: 10px; }
@@ -90,8 +92,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .award, .timestamp { position: absolute; left: 7px; bottom: 8px; background: var(--sheet); color: var(--ink); padding: 4px 7px; font-size: 9px; }
 .c-brand { font-family: var(--serif); font-weight: 500; font-size: max(14px, 3.5cqw); line-height: 1; }
 .c-sub { font-size: max(8px, 1.45cqw); color: var(--muted); margin-top: -.3cqw; }
-.feature-v { flex: 1; min-height: 0; display: flex; justify-content: center; }
-.feature-v .card { width: min(100%, 52cqw); }
+.feature-v { flex: 1; min-height: 0; display: flex; align-items: flex-start; }
+/* same card format as the other commercials */
+.feature-v .card { width: 42cqw; }
+.feature-v .cardimg { aspect-ratio: 4 / 5; }
 
 .tile { display: block; min-height: 0; overflow: hidden; background: var(--still); }
 .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
@@ -131,6 +135,17 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .ph-stack .ph-img { flex: 1; }
 .ph-stack .ph-img img { height: 100%; object-fit: contain; object-position: left center; }
 
+/* tours list (Ghetto Funk) */
+.tours { flex: none; }
+.tours .brand b { font-size: max(13px, 3.2cqw); }
+
+/* all polaroids on one page */
+.pola-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); gap: 1.4cqw; }
+.pola { display: block; min-height: 0; }
+.pola img { width: 100%; height: 100%; object-fit: contain; transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+.pola:hover img, .pola:focus-visible img { transform: scale(1.06); }
+.pola:focus-visible { outline: 1px solid var(--ink); }
+
 /* contact page */
 .contact-links { display: flex; flex-direction: column; gap: 2cqw; font-family: var(--serif); font-size: max(15px, 3.8cqw); }
 .contact-links a { text-decoration: none; }
@@ -147,8 +162,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .folio { position: absolute; top: 5cqw; left: 6cqw; font-size: max(9px, 1.6cqw); color: var(--muted); }
 .folio-r { left: auto; right: 6cqw; }
 .credit { position: absolute; left: 6cqw; bottom: calc(var(--band) + 2cqw); font-weight: 600; font-size: max(9px, 1.8cqw); }
-/* the silhouette stands in front of the name; where it crosses the black letters its dots turn light */
-.silhouette { position: absolute; right: 3cqw; bottom: 5%; height: 82%; width: auto; filter: invert(1); mix-blend-mode: difference; pointer-events: none; }
+/* the silhouette stands on top of the name */
+.silhouette { position: absolute; right: 7cqw; bottom: calc(var(--band) - 1cqw); height: calc(100% - var(--band) - 8cqw); width: auto; pointer-events: none; }
 .reel-wrap { position: absolute; left: 0; right: 0; bottom: 0; height: var(--band); background: var(--ink); overflow: hidden; }
 .reel-wrap video { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
 .open-issue { position: absolute; right: 6cqw; bottom: calc(var(--band) + 2cqw); display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-decoration: none; }
@@ -239,6 +254,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .flip-cast.on-r { left: 50%; background: linear-gradient(90deg, rgba(0,0,0,.35), transparent 70%); }
 .flip-cast.on-l { left: 0; background: linear-gradient(270deg, rgba(0,0,0,.35), transparent 70%); }
 
+.reader.arrive .spread.on { animation: arrive .7s cubic-bezier(.2,.7,.2,1); }
+@keyframes arrive { from { opacity: 0; transform: perspective(1600px) rotateY(-8deg) scale(.96); } }
+
 /* ── Lightbox ── */
 dialog#lightbox { border: 0; padding: 0; margin: 0; width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; background: transparent; color: var(--sheet); }
 dialog#lightbox::backdrop { background: rgba(10,10,10,.96); }
@@ -276,7 +294,7 @@ dialog#lightbox::backdrop { background: rgba(10,10,10,.96); }
   .tb-mail { margin-left: auto; padding: 6px 9px; }
 
   .desk { padding: 20px 16px; gap: 32px; }
-  .cover-mag .page-l { aspect-ratio: 1 / 1.08; --band: 64% !important; }
+  .cover-mag .page-l { aspect-ratio: 1 / 1.3; --band: 52% !important; }
   .cover-mag .page-r { aspect-ratio: 4 / 5; border-top: 2px solid var(--sheet); --band: 100% !important; }
   .cover-mag .folio-r { display: none; }
   .open-issue { bottom: auto; top: 4cqw; right: 4cqw; z-index: 1; background: var(--sheet); padding: 8px 10px; }

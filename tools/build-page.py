@@ -4,7 +4,7 @@
   commercials.html  Nº01 Commercials & Lookbook  (a magazine you page through)
   dance.html        Nº02 Dance
   styling.html      Nº03 Styling
-  photography.html  Nº04 Through my lens
+  photography.html  Nº04 On film
 Edit the lists / page text and run:  python3 tools/build-page.py
 """
 from html import escape as e
@@ -17,8 +17,8 @@ COMMERCIALS = [
     dict(title="Samsung", sub="Galaxy Z Flip6 · global campaign", thumb="samsung", focus="50% 40%", video="samsung"),
     dict(title="bol × JBL", sub="Sport Offsite · 2026", thumb="boljbl", video="bol-x-jbl"),
     dict(title="Lavish", sub="Commercial · 2025", thumb="lavish", focus="38% 50%", video="lavish", clip="clip-lavish"),
-    dict(title="Philips", sub="Commercial · 2025", thumb="philips", focus="50% 30%", video="philips"),
-    dict(title="Foot Athletes", sub="Commercial · 2025", thumb="taf", focus="42% 50%", video="taf-2025"),
+    dict(title="Philips", sub="Commercial · 2025", thumb="philips", focus="50% 100%", video="philips"),
+    dict(title="Foot Athletes", sub="Commercial · 2025", thumb="taf", focus="45% 40%", video="taf-2025"),
     dict(title="Lucid Dreaming", sub="Trailer · 2023", thumb="lucid", focus="41% 50%", video="lucid-dreaming-trailer",
          award="Gouden Kalf competition"),
     dict(title="Nike", sub="Behind the scenes · male model", thumb="nikebts", focus="50% 30%", video="nike-bts"),
@@ -39,14 +39,13 @@ LB = {
     9: ("adidas-lookbook", "Adidas — lookbook"),
     10: ("pasqual-shoot", "Shot with Pasqual"),
     11: ("editorial-01", "Editorial"),
-    13: ("nath-martin", "Photographed by Nath Martin"),
     15: ("film-2025-02", "On film, 2025"),
     17: ("editorial-04", "Editorial"),
-    19: ("editorial-02", "Editorial"),
     21: ("lucid-dreaming-group", "Lucid Dreaming — the cast"),
 }
 
-PHOTO = {i: (f"photography-{i:02d}", "Shot by Jinko") for i in range(1, 15)}
+ONFILM = {i: (f"onfilm-{i:02d}", "On film — shot by Jinko") for i in range(1, 14)}
+POLAS = [f"pola-{i:02d}" for i in range(1, 35)]
 
 TGS_PHOTOS = ["tgs-01", "tgs-02", "tgs-03"]
 YADE_PHOTOS = ["yade-01", "yade-02", "yade-03", "yade-04"]
@@ -55,8 +54,8 @@ YADE_PHOTOS = ["yade-01", "yade-02", "yade-03", "yade-04"]
 ISSUES = [
     ("commercials.html", "Nº01", "Commercials & Lookbook", None, None, None, None),
     ("dance.html", "Nº02", "Dance", "Dance", "ghetto-funk-01", "45% 40%", "Madonna · The Greatest Show · Ghetto Funk"),
-    ("styling.html", "Nº03", "Styling", "Styling", "coast-contra-01", "50% 60%", "Coast Contra · Akyna"),
-    ("photography.html", "Nº04", "Through my lens", "Lens", "photography-02", "50% 35%", "My photography"),
+    ("styling.html", "Nº03", "Styling", "Styling", "styling-cover", "50% 55%", "Coast Contra · Groove · Akyna"),
+    ("photography.html", "Nº04", "On film", "On film", "onfilm-01", "50% 85%", "My photography"),
 ]
 
 
@@ -255,8 +254,9 @@ brands = "".join(f'<div class="brand"><b>{e(b)}</b><span>{e(y)}</span></div>' fo
 issue1 = [
     Page(f'<div class="pg">{top("Issue Nº01 · Commercials", "01 — 04")}<h2 class="pg-title">Commercials</h2>{grid(cards[:4], 2, 2)}</div>', C),
     Page(f'<div class="pg">{top("Commercials", "05 — 08")}{grid(cards[4:], 2, 2)}</div>', C),
-    Page(f'<div class="pg">{top("New", "Nike × Victor Wembanyama")}<h3 class="pg-h">Nike × Wemby</h3>'
-         f'<p class="pg-deck">Basketball, choreographed — a vertical film for Nike with Victor Wembanyama.</p>'
+    Page(f'<div class="pg">{top("Nike Basketball", "Main cast")}<h3 class="pg-h">Nike × Wemby</h3>'
+         f'<p class="pg-deck">Booked by <i>I Could Never Be A Dancer</i> as part of the main cast for Nike Basketball — '
+         f'together we created a dance-basketball film for Victor Wembanyama.</p>'
          f'<div class="feature-v">{card(WEMBY, no="09")}</div></div>', C),
     Page(f'''<div class="pg">{top("Selected work", "2023 — 2026")}<h3 class="pg-h">Worked with</h3>
   <div class="brands">{brands}</div>
@@ -267,18 +267,19 @@ issue1 = [
     framed_page(L, "Lookbook", 8, LB[8]),
     framed_page(L, "Lookbook", 10, LB[10]),
     bleed_page(L, 11, LB[11]),
-    framed_page(L, "Lookbook", 13, LB[13]),
     bleed_page(L, 15, LB[15]),
-    pair_page(L, "Lookbook", (17, LB[17]), (19, LB[19])),
+    framed_page(L, "Lookbook", 17, LB[17]),
     framed_page(L, "Lookbook", 21, LB[21]),
 ]
 
 # ───────────────────────── Nº02 Dance ─────────────────────────
 MV = ("musicvideos", "Music videos")
-T = ("tgs", "The Greatest Show")
 Y = ("yade", "Yade Lauren")
 M = ("moredance", "More dance")
 G = ("ghettofunk", "Ghetto Funk")
+
+TOURS = [("Breakin’ Convention", "UK"), ("Canada", "Tour"), ("Despertares", "Mexico City · 2×"), ("The Greatest Show", "China")]
+tours = "".join(f'<div class="brand"><b>{e(t)}</b><span>{e(w)}</span></div>' for t, w in TOURS)
 
 issue2 = [
     Page(f'<div class="pg">{top("Issue Nº02 · Dance", "Music videos")}<h2 class="pg-title">Music videos</h2>'
@@ -286,10 +287,24 @@ issue2 = [
                          "Madonna — Confessions II, The Film · Jinko from 06:55", start=415, stamp="06:55"),
                  yt_card("hEHwr5k9pd0", "Claude — C’est La Vie", "Official music video · Eurovision 2025", "Eurovision",
                          "Claude — C’est La Vie · Official Music Video · Eurovision 2025")], 1, 2) + '</div>', MV),
-    feature_page(T, "Project · Nanjing, China", "Choreographer · Dancer", "The Greatest Show",
+    Page(f'<div class="pg">{top("The collective", "<b class=badge>Member</b>")}<h3 class="pg-h">Ghetto Funk Collective</h3>'
+         f'<p class="pg-deck">Ghetto Funk is a dance collective that feels like family to me, founded by Ruben Chi and Roche Apinsa. '
+         f'I got the honour to become part of it — and to tour with them.</p>'
+         f'<div class="brands tours">{tours}</div>'
+         + grid([tile("ghetto-funk-01", "Ghetto Funk Collective — photo: Salih Kilic")], 1, 1) + '</div>', G),
+    Page(f'<div class="pg">{top("Ghetto Funk Collective", "GF/01 — 03")}'
+         + grid([yt_card("0otuG_RO1mI", "“Just Feel”", "10 year anniversary", "GF/01", "“Just Feel” — 10 year anniversary, Ghetto Funk Collective"),
+                 yt_card("oVR1SJvekRw", "Damn Right", "We Are Somebody", "GF/02", "Ghetto Funk Collective — Damn Right We Are Somebody"),
+                 yt_card("CV84FmeBRbU", "Keep On Lovin’ Me", "The Whispers", "GF/03", "Ghetto Funk Collective — Keep On Lovin’ Me (The Whispers)")], 1, 3) + '</div>', G),
+    feature_page(G, "Ghetto Funk on tour · Nanjing, China", "Choreographer · Dancer", "The Greatest Show",
                  "We were invited to Nanjing to create a two-hour show — and to dance in it ourselves, alongside 170 guest dancers from China. A challenge both as choreographer and as dancer.",
                  grid([tile(TGS_PHOTOS[0], "The Greatest Show — Nanjing, China").replace('class="tile"', 'class="tile span-all"')]
                       + [tile(s, "The Greatest Show — Nanjing, China") for s in TGS_PHOTOS[1:]], 2, tpl="3fr 2fr")),
+    Page(f'<div class="pg">{top("Ghetto Funk Collective", "GF/04 — 06")}'
+         + grid([card(dict(title="Mexico", sub="Teaser", thumb="gf-mexico", video="gf-mexico", caption="Ghetto Funk Collective — Mexico teaser"), no="GF/04"),
+                 card(dict(title="James Brown", sub="Studio session", thumb="gf-james-brown", video="gf-james-brown", caption="Ghetto Funk Collective — James Brown session"), no="GF/05"),
+                 photo_card("ghetto-funk-02", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic").replace('class="card fill"', 'class="card fill span-all"')],
+                2, tpl="1fr 1fr") + '</div>', G),
     feature_page(Y, "Project · Festival show", "Performer", "Yade Lauren",
                  "Yade Lauren asked me to join her show as a performer. We played a festival together and brought more of a fashion vibe to her set.",
                  grid([tile(s, "Yade Lauren — festival show") for s in YADE_PHOTOS], 2, 2)),
@@ -298,20 +313,14 @@ issue2 = [
                  card(dict(title="JMD", sub="Stage", thumb="dance-jmd", video="dance-jmd"), no="Stage"),
                  card(dict(title="Dam Square", sub="Street session · Amsterdam", thumb="dance-footage", video="dance-footage"), no="Session"),
                  card(dict(title="Hashna", sub="Collab", thumb="dance-hashna", video="dance-hashna"), no="Collab")], 2, 2) + '</div>', M),
-    Page(f'<div class="pg">{top("The collective", "<b class=badge>Member</b>")}<h3 class="pg-h">Ghetto Funk Collective</h3>'
-         + grid([yt_card("0otuG_RO1mI", "“Just Feel”", "10 year anniversary", "GF/01", "“Just Feel” — 10 year anniversary, Ghetto Funk Collective"),
-                 yt_card("oVR1SJvekRw", "Damn Right", "We Are Somebody", "GF/02", "Ghetto Funk Collective — Damn Right We Are Somebody"),
-                 yt_card("CV84FmeBRbU", "Keep On Lovin’ Me", "The Whispers", "GF/03", "Ghetto Funk Collective — Keep On Lovin’ Me (The Whispers)")], 1, 3) + '</div>', G),
-    Page(f'<div class="pg">{top("Ghetto Funk Collective", "GF/04 — 07")}'
-         + grid([card(dict(title="Mexico", sub="Teaser", thumb="gf-mexico", video="gf-mexico", caption="Ghetto Funk Collective — Mexico teaser"), no="GF/04"),
-                 card(dict(title="James Brown", sub="Studio session", thumb="gf-james-brown", video="gf-james-brown", caption="Ghetto Funk Collective — James Brown session"), no="GF/05"),
-                 photo_card("ghetto-funk-01", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic"),
-                 photo_card("ghetto-funk-02", "On stage", "Photo: Salih Kilic", "Ghetto Funk Collective — photo: Salih Kilic")], 2, 2) + '</div>', G),
 ]
 
 # ───────────────────────── Nº03 Styling ─────────────────────────
 S = ("styling", "Styling")
 A = ("akyna", "Akyna")
+GR = ("groove", "Groove")
+GROOVE = dict(title="Groove", sub="Theatre show · on stage", thumb="groove", focus="50% 25%", video="groove",
+              caption="Groove — The Ruggeds × Ghetto Funk Collective")
 COAST = 'data-youtube="NjRvXjSHze4" data-caption="Coast Contra — Don’t Worry (Official Music Video) · Styling"'
 CC = "Styling — Coast Contra, Don’t Worry"
 
@@ -323,28 +332,35 @@ issue3 = [
                  f'<button class="more-btn" {COAST}>Watch →</button>'),
     Page(f'<div class="pg">{top("Coast Contra — Don’t Worry", "On set")}'
          f'<div class="ph-pair ph-stack">{photo(1, "coast-contra-01", CC)}{photo(2, "coast-contra-03", CC)}</div></div>', S),
+    Page(f'<div class="pg">{top("Theatre show · The Ruggeds × Ghetto Funk Collective", "Styling")}<h3 class="pg-h">Groove</h3>'
+         '<p class="pg-deck pg-deck-s">The Ruggeds and Ghetto Funk Collective take the swinging dance concert <i>Groove</i> through the theatres. '
+         'Travel fifty years back in time and experience the music of James Brown, Aretha Franklin and Marvin Gaye. Dancing musicians and '
+         'musical dancers guide you through funk &amp; soul, hip-hop, house and everything in between. Put on your best outfit — '
+         'sitting still is not an option.</p>'
+         + grid([card(GROOVE, no="Show").replace('class="card fill"', 'class="card fill span-rows"'),
+                 tile("groove-01", "Groove — The Ruggeds × Ghetto Funk Collective"),
+                 tile("groove-02", "Groove — on stage")], 2, 2) + '</div>', GR),
     Page(f'''<div class="pg">{top("Feature 03.1", "The label")}
   <p class="pg-deck">Akyna is the brand I started together with Pasqual. From production to design, we do everything ourselves.</p>
   <a class="more-btn" href="https://akyna-project.com/" target="_blank" rel="noopener">akyna-project.com ↗</a>
-</div>''' + giant(["Akyna"], "Akyna", cls="wide"), A, "accent", "40%"),
+  {grid([tile("akyna-02", "Akyna — AW26"), tile("akyna-03", "Akyna — AW26")], 2, 1)}
+</div>''' + giant(["Akyna"], "Akyna", cls="wide"), A, "accent", "34%"),
+    bleed_page(A, 1, ("akyna-01", "Akyna — AW26")),
 ]
 
-# ───────────────────────── Nº04 Through my lens ─────────────────────────
-P = ("lens", "Through my lens")
+# ───────────────────────── Nº04 On film ─────────────────────────
+F = ("onfilm", "On film")
+PL = ("polaroids", "Polaroids")
+LANDSCAPE = {7, 9, 12}   # these sit framed on the page; the rest alternate full-bleed / framed
+polas = "".join(f'<button class="pola" data-full="assets/img/{p}.jpg" data-caption="Polaroid — shot by Jinko">'
+                f'<img src="assets/img/{p}-sm.jpg" alt="Polaroid shot by Jinko" loading="lazy"></button>' for p in POLAS)
 
-issue4 = [
-    opener_page(P, "Issue Nº04 · Photography", "Through my lens", "My own photography — shot on film.", 1, PHOTO[1]),
-    bleed_page(P, 2, PHOTO[2]),
-    pair_page(P, "Through my lens", (3, PHOTO[3]), (4, PHOTO[4])),
-    bleed_page(P, 5, PHOTO[5]),
-    framed_page(P, "Through my lens", 6, PHOTO[6]),
-    bleed_page(P, 7, PHOTO[7]),
-    pair_page(P, "Through my lens", (8, PHOTO[8]), (10, PHOTO[10])),
-    pair_page(P, "Through my lens", (9, PHOTO[9]), (11, PHOTO[11]), stack=True),
-    bleed_page(P, 12, PHOTO[12]),
-    framed_page(P, "Through my lens", 13, PHOTO[13]),
-    framed_page(P, "Through my lens", 14, PHOTO[14]),
-]
+issue4 = [opener_page(F, "Issue Nº04 · Photography", "On film", "My own photography — shot on film.", 1, ONFILM[1])]
+for i in range(2, 14):
+    framed = i in LANDSCAPE or i in {3, 6, 13}
+    issue4.append(framed_page(F, "On film", i, ONFILM[i]) if framed else bleed_page(F, i, ONFILM[i]))
+issue4.append(Page(f'<div class="pg">{top("On film", "Instant film")}<h3 class="pg-h">Polaroids</h3>'
+                   f'<div class="pola-grid">{polas}</div></div>', PL))
 
 
 # ───────────────────────── Cover (index.html) ─────────────────────────
@@ -363,17 +379,18 @@ index = head("Jinko Joshu — Magazine Nº01",
              "Jinko Joshu — Amsterdam-based performer. Commercials, dance, styling, photography and the label Akyna.", "home") + f'''
 <main class="desk">
   <article class="mag cover-mag" aria-label="Issue Nº01 — showreel">
-    <div class="page page-l" style="--band:56%">
+    <div class="page page-l" style="--band:50%">
       <span class="folio">Jinko Joshu — Issue Nº01</span>
       <span class="credit">Showreel · Autumn 2026</span>
-      {giant(["Jinko", "Joshu"], "Jinko Joshu", tag="h1")}
       <img class="silhouette" src="assets/mag/halftone-portrait.png" alt="">
+      {giant(["Jinko", "Joshu"], "Jinko Joshu", tag="h1")}
     </div>
-    <div class="page page-r" style="--band:56%">
+    <div class="page page-r" style="--band:50%">
       <span class="folio folio-r">Amsterdam · @jinkojoshu</span>
       <a class="open-issue" href="commercials.html"><span>Open the issue</span><b>Commercials &amp; Lookbook →</b></a>
       <div class="reel-wrap">
         <video id="reel" muted playsinline autoplay poster="assets/poster/reel.jpg" aria-label="Showreel: short moments from Jinko Joshu's work"></video>
+        <audio id="reel-audio" src="assets/audio/showreel.m4a" loop preload="none"></audio>
         <button class="sound" aria-pressed="false"><span class="sound-ico" aria-hidden="true"></span><span class="sound-txt">Sound on</span></button>
       </div>
     </div>
@@ -400,8 +417,8 @@ out = {
                       "Jinko Joshu as dancer and choreographer: Madonna, Claude, The Greatest Show, Yade Lauren and Ghetto Funk Collective.",
                       issue2, "styling.html", "Nº03 Styling"),
     "styling": magazine("styling.html", "Styling — Jinko Joshu",
-                        "Styling by Jinko Joshu: Coast Contra — Don’t Worry, and the label Akyna.", issue3, "photography.html", "Nº04 Lens"),
-    "photography": magazine("photography.html", "Through my lens — Jinko Joshu",
+                        "Styling by Jinko Joshu: Coast Contra — Don’t Worry, and the label Akyna.", issue3, "photography.html", "Nº04 On film"),
+    "photography": magazine("photography.html", "On film — Jinko Joshu",
                             "Photography by Jinko Joshu, shot on film.", issue4, "index.html", "Cover"),
 }
 for name, html in out.items():
