@@ -192,6 +192,10 @@ FONTS = ("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,800
          "&family=Inter+Tight:ital,wght@0,400..700;1,400..600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@500&display=swap")
 
 
+SITE_URL = "https://jinkojoshu.eu/"
+# Link-preview image (WhatsApp etc.): render tools/share-card.html with zsh tools/share-card.sh
+
+
 def head(title, desc, body_class=""):
     return f'''<!doctype html>
 <html lang="en">
@@ -201,7 +205,14 @@ def head(title, desc, body_class=""):
   <title>{e(title)}</title>
   <meta name="description" content="{e(desc)}">
   <meta property="og:title" content="{e(title)}">
-  <meta property="og:image" content="assets/img/jinko-portrait.jpg">
+  <meta property="og:description" content="{e(desc)}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{SITE_URL}">
+  <meta property="og:image" content="{SITE_URL}assets/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{SITE_URL}assets/share.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="{FONTS}" rel="stylesheet">
