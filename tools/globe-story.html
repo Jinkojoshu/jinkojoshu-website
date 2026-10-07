@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- Instagram story (1080×1920): the Dance globe turning past the places — "Where dance took me".
+     Render: zsh tools/globe-story.sh  →  "Globe story.mp4" + "Globe story.jpg" in the project folder.
+     Open with ?t=2.5 to look at a single moment. -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html, body { margin: 0; background: #0B0B0B; } canvas { display: block; width: 1080px; height: 1920px; }</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="../site/assets/globe-land.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 30, DUR = 15;
+const desk = '#0B0B0B', onDesk = '#ECE9E2', muted = '#8A867E', sheet = '#F5F3EE', ink = '#141414', accent = '#8CCBEA';
+const RAD = Math.PI / 180;
+const ctx = document.getElementById('c').getContext('2d');
+
+// the places on the globe (same as the Dance issue)
+const PLACES = [
+  ['Amsterdam', 52.37, 4.90, 'right', 6], ['Lowlands', 52.45, 5.69, 'right', -22], ['London', 51.51, -0.13, 'left', -10],
+  ['Barcelona', 41.39, 2.17, 'right', 10], ['Mexico City', 19.43, -99.13, 'right', 0], ['Canada', 43.65, -79.38, 'right', -6],
+  ['Guilin', 25.27, 110.29, 'left', 0], ['Shanghai', 31.23, 121.47, 'right', 0],
+];
+// the tour: the globe holds on each region, with its places and projects underneath
+const STOPS = [
+  { lon: 3, lat: 46, at: 0, hold: 3.2, region: 'Europe', cities: ['Amsterdam', 'Lowlands', 'London', 'Barcelona'],
+    work: ['Madonna · Confessions II', 'Claude · C’est La Vie', 'The Holy GraiLL · Lowlands', 'Breakin’ Convention · A$AP Rocky'] },
+  { lon: -85, lat: 30, region: 'The Americas', cities: ['Mexico City', 'Canada'],
+    work: ['Despertares · Mexico City 2×', 'Ghetto Funk · Canada tour'] },
+  { lon: 116, lat: 26, region: 'China', cities: ['Guilin', 'Shanghai'],
+    work: ['The Greatest Show · Ghetto Funk', 'On the bridge · Guilin'] },
+];
+// timeline (seconds): hold Europe, turn west, hold, turn east past Europe to China, hold, turn back home
+const SEG = [
+  { from: 0, to: 0, t0: 0, t1: 3.0 },            // Europe
+  { from: 0, to: 1, t0: 3.0, t1: 4.6 },
+  { from: 1, to: 1, t0: 4.6, t1: 7.6 },          // Americas
+  { from: 1, to: 2, t0: 7.6, t1: 10.0 },
+  { from: 2, to: 2, t0: 10.0, t1: 13.2 },        // China
+  { from: 2, to: 0, t0: 13.2, t1: 15.0 },        // back home (loops)
+];
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
+const dots = [];
+for (const [lat, step, runs] of window.GLOBE_LAND) for (const [start, n] of runs) for (let k = 0; k < n; k++) dots.push([start + k * step, lat]);
+const dotsRad = dots.map(([lo, la]) => [lo * RAD, Math.sin(la * RAD), Math.cos(la * RAD)]);
+
+function view(t) {
+  const s = SEG.find(g => t >= g.t0 && t < g.t1) || SEG[SEG.length - 1];
+  const a = STOPS[s.from], b = STOPS[s.to];
+  if (s.from === s.to) return { lon: a.lon, lat: a.lat, stop: s.from, fade: Math.min(1, (t - s.t0) / .45, (s.t1 - t) / .35) };
+  const k = ease((t - s.t0) / (s.t1 - s.t0));
+  let dl = b.lon - a.lon;                       // Americas → China goes east, over Europe
+  if (s.from === 1 && s.to === 2) dl = (b.lon - a.lon + 360) % 360;
+  if (s.from === 2 && s.to === 0) dl = b.lon - a.lon;   // China → Europe: back west
+  return { lon: a.lon + dl * k, lat: a.lat + (b.lat - a.lat) * k, stop: -1, fade: 0 };
+}
+
+function draw(t) {
+  const v = view(t), lon0 = v.lon, lat0 = v.lat;
+  ctx.fillStyle = desk; ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = 'alphabetic';
+  // header
+  ctx.font = "500 26px 'IBM Plex Mono'"; ctx.fillStyle = muted; ctx.textAlign = 'left';
+  ctx.fillText('JINKO JOSHU — ISSUE Nº02', 60, 168);
+  ctx.textAlign = 'right'; ctx.fillText('DANCE', W - 60, 168);
+  ctx.textAlign = 'left'; ctx.fillStyle = onDesk; ctx.font = "600 112px 'Inter Tight'";
+  ctx.letterSpacing = '-5px';
+  ctx.fillText('Where dance', 54, 300); ctx.fillText('took me', 54, 405);
+  ctx.letterSpacing = '0px';
+
+  // globe
+  const cx = W / 2, cy = 905, R = 425;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fillStyle = sheet; ctx.fill();
+  const sp0 = Math.sin(lat0 * RAD), cp0 = Math.cos(lat0 * RAD), l0 = lon0 * RAD, d = 3.2;
+  for (const [lr, sp, cp] of dotsRad) {
+    const cl = Math.cos(lr - l0), z = sp0 * sp + cp0 * cp * cl;
+    if (z < 0.02) continue;
+    ctx.fillStyle = `rgba(20,20,20,${.35 + .5 * z})`;
+    const x = cx + R * cp * Math.sin(lr - l0), y = cy - R * (cp0 * sp - sp0 * cp * cl);
+    ctx.fillRect(x - d / 2, y - d / 2, d, d);
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.stroke();
+
+  // places
+  const on = v.stop >= 0 ? STOPS[v.stop].cities : [];
+  ctx.font = "500 24px 'IBM Plex Mono'"; ctx.textBaseline = 'middle';
+  for (const [name, lat, lon, side, dy] of PLACES) {
+    const l = (lon - lon0) * RAD, p = lat * RAD;
+    const z = sp0 * Math.sin(p) + cp0 * Math.cos(p) * Math.cos(l);
+    if (z < 0.2) continue;
+    const x = cx + R * Math.cos(p) * Math.sin(l), y = cy - R * (cp0 * Math.sin(p) - sp0 * Math.cos(p) * Math.cos(l));
+    const hot = on.includes(name) ? v.fade : 0;
+    if (hot > 0) { ctx.beginPath(); ctx.arc(x, y, 14 + 10 * hot, 0, 2 * Math.PI); ctx.strokeStyle = `rgba(20,20,20,${.6 * hot})`; ctx.lineWidth = 1.5; ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(x, y, 8 + 3 * hot, 0, 2 * Math.PI); ctx.fillStyle = hot > .5 ? accent : ink; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = ink; ctx.stroke();
+    ctx.fillStyle = ink; ctx.textAlign = side === 'left' ? 'right' : 'left';
+    ctx.fillText(name.toUpperCase(), x + (side === 'left' ? -1 : 1) * 22, y + dy);
+  }
+
+  // what happened there
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  if (v.stop >= 0 && v.fade > 0) {
+    const s = STOPS[v.stop];
+    ctx.globalAlpha = v.fade;
+    ctx.font = "500 26px 'IBM Plex Mono'"; ctx.fillStyle = accent;
+    ctx.fillText(s.cities.join(' · ').toUpperCase(), 60, 1415);
+    ctx.font = "600 44px 'Inter Tight'"; ctx.fillStyle = onDesk; ctx.letterSpacing = '-1.5px';
+    s.work.forEach((w, i) => ctx.fillText(w, 60, 1478 + i * 56));
+    ctx.letterSpacing = '0px'; ctx.globalAlpha = 1;
+  }
+  // footer
+  ctx.font = "500 26px 'IBM Plex Mono'"; ctx.fillStyle = muted;
+  ctx.fillText('JINKOJOSHU.EU', 60, 1720);
+  ctx.textAlign = 'right'; ctx.fillStyle = accent; ctx.fillText('LINK BELOW', W - 60, 1720);
+}
+
+window.FRAMES = DUR * FPS;
+window.drawFrame = i => draw(i / FPS);
+Promise.all(["600 112px 'Inter Tight'", "500 26px 'IBM Plex Mono'"].map(f => document.fonts.load(f))).then(() => {
+  const q = new URLSearchParams(location.search);
+  draw(q.has('t') ? +q.get('t') : 1.5);
+  window.READY = true;
+  if (q.has('record')) (async () => {          // send every frame to tools/frame-server.py
+    for (let i = 0; i < window.FRAMES; i++) {
+      drawFrame(i);
+      const blob = await new Promise(r => ctx.canvas.toBlob(r, 'image/png'));
+      await fetch('/frame?i=' + i, { method: 'POST', body: blob });
+    }
+    document.title = 'DONE';
+  })();
+});
+</script>
+</body>
+</html>
