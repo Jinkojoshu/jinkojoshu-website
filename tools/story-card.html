@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- Instagram story (1080×1920) announcing the website. Render: zsh tools/share-card.sh story -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Inter+Tight:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0B0B0B; }
+  .label { font-family: 'IBM Plex Mono', monospace; font-size: 26px; letter-spacing: .04em; text-transform: uppercase; }
+  /* the magazine: paper on top, showreel still below, like the cover folded open */
+  .mag { position: absolute; left: 60px; right: 60px; top: 230px; height: 1300px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .paper { position: absolute; left: 0; right: 0; top: 0; height: 760px; background: #F5F3EE; color: #141414; overflow: hidden; }
+  .folio { position: absolute; top: 40px; left: 48px; color: #8A867E; }
+  .folio-r { left: auto; right: 48px; }
+  .silhouette { position: absolute; right: 70px; top: 36px; height: 230px; }
+  .credit { position: absolute; left: 48px; top: 200px; font-weight: 500; }
+  .band { position: absolute; left: 48px; right: 48px; bottom: 0; height: 505px; overflow: hidden; }
+  .giant { position: absolute; left: 0; bottom: 0; margin: 0; font-family: 'Archivo', sans-serif; font-weight: 900; font-stretch: 62%;
+           text-transform: uppercase; font-size: 336px; line-height: .74; letter-spacing: .005em; }
+  .giant span { display: block; height: .74em; overflow: hidden; white-space: nowrap; }
+  .giant span + span { border-top: .022em solid #F5F3EE; }
+  .still { position: absolute; left: 0; right: 0; top: 760px; bottom: 0; overflow: hidden; background: #141414; }
+  .still img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
+  .still::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,0) 45%); }
+  .issue { position: absolute; z-index: 1; left: 48px; bottom: 40px; color: #fff; }
+  .issue b { display: block; font-family: 'Inter Tight', sans-serif; font-weight: 600; letter-spacing: -.045em; font-size: 76px; line-height: 1; margin-bottom: 16px; }
+  /* under the magazine: the announcement, with room left for the link sticker */
+  .news { position: absolute; left: 60px; right: 60px; top: 1580px; color: #ECE9E2; display: flex; justify-content: space-between; align-items: baseline; }
+  .news b { font-family: 'Inter Tight', sans-serif; font-weight: 600; letter-spacing: -.045em; font-size: 64px; }
+  .news span { color: #8CCBEA; }
+</style>
+</head>
+<body>
+<span class="label" style="position:absolute;top:150px;left:60px;color:#8A867E">New website</span>
+<span class="label" style="position:absolute;top:150px;right:60px;color:#8A867E">Out now</span>
+<div class="mag">
+  <div class="paper">
+    <span class="label folio">Jinko Joshu — Issue Nº01</span>
+    <img class="silhouette" src="../site/assets/mag/halftone-portrait.png" alt="">
+    <span class="label credit">Performer · Amsterdam</span>
+    <div class="band"><h1 class="giant"><span>Jinko</span><span>Joshu</span></h1></div>
+  </div>
+  <div class="still">
+    <img src="../site/assets/poster/reel.jpg" alt="">
+    <div class="issue"><b>Magazine Nº01</b><span class="label">Commercials · Dance · Styling · Film</span></div>
+  </div>
+</div>
+<div class="news"><b>jinkojoshu.eu</b><span class="label">Link below</span></div>
+</body>
+</html>
