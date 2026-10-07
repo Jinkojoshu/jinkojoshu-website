@@ -567,6 +567,77 @@ document.querySelectorAll('[data-full]').forEach((btn) => {
     const img = document.createElement('img');
     img.src = btn.dataset.full;
     img.alt = btn.querySelector('img').alt;
+    img.className = 'zoomable';
     open(img, btn.dataset.caption);
+    zoomable(img);
   });
 });
+
+// Photos in the viewer can be zoomed: pinch or double-tap on a phone, double-click or scroll wheel on a computer;
+// drag to look around. Not zoomed in, a sideways swipe goes to the next photo.
+function zoomable(img) {
+  let s = 1, x = 0, y = 0;
+  const pts = new Map();
+  let pinch = null, pan = null, swipe = null, lastTap = 0;
+  const apply = (smooth) => {
+    const maxX = Math.max(0, (img.offsetWidth * s - lbBody.clientWidth) / 2);
+    const maxY = Math.max(0, (img.offsetHeight * s - lbBody.clientHeight) / 2);
+    x = Math.max(-maxX, Math.min(maxX, x)); y = Math.max(-maxY, Math.min(maxY, y));
+    img.style.transition = smooth ? 'transform .25s ease' : 'none';
+    img.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    img.classList.toggle('zoomed', s > 1.01);
+  };
+  // zoom to scale ns, keeping the point (cx, cy) on the screen where it is
+  const zoomAt = (ns, cx, cy, smooth) => {
+    ns = Math.max(1, Math.min(5, ns));
+    const r = lbBody.getBoundingClientRect();
+    const px = cx - (r.left + r.width / 2), py = cy - (r.top + r.height / 2);
+    x = px - (px - x) * (ns / s); y = py - (py - y) * (ns / s); s = ns;
+    if (s === 1) { x = 0; y = 0; }
+    apply(smooth);
+  };
+  const toggle = (cx, cy) => zoomAt(s > 1.01 ? 1 : 2.5, cx, cy, true);
+
+  let lastType = 'mouse';
+  img.addEventListener('dblclick', (ev) => { if (lastType !== 'touch') toggle(ev.clientX, ev.clientY); });
+  img.addEventListener('wheel', (ev) => { ev.preventDefault(); zoomAt(s * Math.exp(-ev.deltaY / 300), ev.clientX, ev.clientY); }, { passive: false });
+  img.addEventListener('pointerdown', (ev) => {
+    lastType = ev.pointerType;
+    try { img.setPointerCapture(ev.pointerId); } catch (e) { /* not a live pointer */ }
+    pts.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pts.size === 2) {
+      const [[ax, ay], [bx, by]] = [...pts.values()];
+      pinch = { d: Math.hypot(ax - bx, ay - by), s }; pan = swipe = null;
+    } else if (pts.size === 1) {
+      pan = { x0: ev.clientX - x, y0: ev.clientY - y };
+      swipe = { x: ev.clientX, y: ev.clientY, t: Date.now() };
+    }
+  });
+  img.addEventListener('pointermove', (ev) => {
+    if (!pts.has(ev.pointerId)) return;
+    pts.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pinch && pts.size === 2) {
+      const [[ax, ay], [bx, by]] = [...pts.values()];
+      zoomAt(pinch.s * Math.hypot(ax - bx, ay - by) / pinch.d, (ax + bx) / 2, (ay + by) / 2);
+    } else if (pan && s > 1.01) {
+      x = ev.clientX - pan.x0; y = ev.clientY - pan.y0; apply();
+    }
+  });
+  const up = (ev) => {
+    if (!pts.has(ev.pointerId)) return;
+    pts.delete(ev.pointerId);
+    if (pts.size < 2) pinch = null;
+    if (pts.size === 1) { const [[px, py]] = [...pts.values()]; pan = { x0: px - x, y0: py - y }; }
+    if (pts.size) return;
+    if (swipe && ev.type === 'pointerup') {
+      const dx = ev.clientX - swipe.x, dy = ev.clientY - swipe.y, quick = Date.now() - swipe.t < 300;
+      if (s <= 1.01 && Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && !lbNext.hidden) step(dx < 0 ? 1 : -1);
+      else if (ev.pointerType === 'touch' && quick && Math.hypot(dx, dy) < 12) {
+        if (Date.now() - lastTap < 320) { toggle(ev.clientX, ev.clientY); lastTap = 0; } else lastTap = Date.now();
+      }
+    }
+    swipe = pan = null;
+  };
+  img.addEventListener('pointerup', up);
+  img.addEventListener('pointercancel', up);
+}
