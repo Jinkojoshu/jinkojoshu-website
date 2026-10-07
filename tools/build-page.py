@@ -306,7 +306,7 @@ def strip_cell(c, no):
     logos = "".join(logo_img(n, "strip-logo-img") for n in c.get("logos", []))
     brand = f'<span class="strip-logo">{logos or e(c["title"])}</span>'
     cap = e(c.get("caption") or f'{c["title"]} — {c["sub"]}')
-    return (f'<button class="strip-cell" {play}{note} data-caption="{cap}">'
+    return (f'<button class="strip-cell" data-film="{c["thumb"]}" {play}{note} data-caption="{cap}">'
             f'<img src="assets/thumbs/{c["thumb"]}.jpg" alt="" loading="lazy"{focus}>{vid}{brand}'
             f'<span class="strip-cap"><b>{no}</b> {e(c["title"])} · {e(c["sub"])}</span></button>')
 
@@ -399,7 +399,7 @@ PLACES = [
         ("Dam Square", "Street session", "#damsquare"),
         ("Short movie", "Film", "#shortmovie"),
         ("A$AP Rocky", "Tour", "#asap"),
-        ("Lucid Dreaming", "Film", "commercials.html")]),
+        ("Lucid Dreaming", "Film", "commercials.html?film=lucid")]),
     dict(city="Lowlands · Biddinghuizen", lat=52.45, lon=5.69, dy=-15, items=[("Oh My: The Holy GraiLL", "Dance film", "#holygraill")]),
     dict(city="London", lat=51.51, lon=-0.13, side="left", dy=-8, items=[
         ("Madonna · Confessions II", "Music video", "#madonna"),
@@ -407,8 +407,8 @@ PLACES = [
         ("Collab with Jan", "Dance video", "#janlondon")]),
     dict(city="Guilin · China", lat=25.27, lon=110.29, side="left", items=[("On the bridge", "Dance film", "#bridge")]),
     dict(city="Shanghai · China", lat=31.23, lon=121.47, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
-    dict(city="Paris", lat=48.86, lon=2.35, dy=6, items=[("Nike × Wemby", "Commercial", "commercials.html")]),
-    dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html")]),
+    dict(city="Paris", lat=48.86, lon=2.35, dy=6, items=[("Nike × Wemby", "Commercial", "commercials.html?film=wemby")]),
+    dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html?film=samsung")]),
     dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", "#ghettofunk")]),
     dict(city="Canada", lat=43.65, lon=-79.38, dy=-6, items=[("Ghetto Funk on tour", "Tour", "#ghettofunk")]),
 ]

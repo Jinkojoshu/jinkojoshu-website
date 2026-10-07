@@ -685,3 +685,14 @@ function zoomable(img) {
   img.addEventListener('pointerup', up);
   img.addEventListener('pointercancel', up);
 }
+
+// commercials.html?film=wemby opens that film straight away (links from the Dance globe)
+const filmParam = new URLSearchParams(location.search).get('film');
+const filmBtn = filmParam && document.querySelector(`[data-film="${CSS.escape(filmParam)}"]`);
+if (filmBtn) {
+  filmBtn.click();
+  const v = lbBody.querySelector('video');
+  // without a click on this page the browser may refuse sound: then start muted, the controls can unmute
+  if (v) v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  lb.addEventListener('close', () => history.replaceState(null, '', location.pathname + location.hash), { once: true });
+}
