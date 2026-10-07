@@ -172,7 +172,7 @@ def feature_page(section, kicker, right, heading, deck, media, after=""):
     return Page(f'<div class="pg">{top(kicker, right)}<h3 class="pg-h">{heading}</h3><p class="pg-deck">{deck}</p>{media}{after}</div>', section)
 
 
-REPRESENTED = '<a href="https://www.aplmodels.com/men" target="_blank" rel="noopener">APL</a> · The Movers'
+REPRESENTED = '<a href="https://www.aplmodels.com/men" target="_blank" rel="noopener">APL</a> · <a href="https://themovers.amsterdam/" target="_blank" rel="noopener">The Movers</a>'
 
 
 def contact_page():
