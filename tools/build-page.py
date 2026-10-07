@@ -407,6 +407,7 @@ PLACES = [
         ("Collab with Jan", "Dance video", "#janlondon")]),
     dict(city="Guilin · China", lat=25.27, lon=110.29, side="left", items=[("On the bridge", "Dance film", "#bridge")]),
     dict(city="Shanghai · China", lat=31.23, lon=121.47, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
+    dict(city="Paris", lat=48.86, lon=2.35, dy=6, items=[("Nike × Wemby", "Commercial", "commercials.html")]),
     dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html")]),
     dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", "#ghettofunk")]),
     dict(city="Canada", lat=43.65, lon=-79.38, dy=-6, items=[("Ghetto Funk on tour", "Tour", "#ghettofunk")]),
