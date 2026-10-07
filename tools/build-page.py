@@ -409,7 +409,7 @@ PLACES = [
     dict(city="Shanghai · China", lat=31.23, lon=121.47, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
     dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html")]),
     dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", "#ghettofunk")]),
-    dict(city="Canada", lat=43.65, lon=-79.38, dy=-6, items=[("On tour", "Ghetto Funk", "#ghettofunk")]),
+    dict(city="Canada", lat=43.65, lon=-79.38, dy=-6, items=[("Ghetto Funk on tour", "Tour", "#ghettofunk")]),
 ]
 import json
 EXT = ' target="_blank" rel="noopener"'
