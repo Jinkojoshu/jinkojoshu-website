@@ -497,7 +497,7 @@ dialog#lightbox::backdrop { background: rgba(10,10,10,.96); }
 }
 
 /* cover: contact + representation */
-.cover-contact { position: absolute; top: 5cqw; right: 6cqw; z-index: 2; font-family: var(--sans); font-size: max(9px, 1.6cqw); letter-spacing: var(--label-track); text-transform: uppercase; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+.cover-contact { position: absolute; top: calc(5cqw + max(9px, 1.6cqw) + 1.6cqw); left: 6cqw; z-index: 2; font-family: var(--sans); font-size: max(9px, 1.6cqw); letter-spacing: var(--label-track); text-transform: uppercase; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
 .cover-contact:hover, .cover-contact:focus-visible { color: var(--accent); }
 .desk-foot .rep { color: var(--muted); }
 .desk-foot .rep a { color: var(--ink-on-dark, inherit); }
