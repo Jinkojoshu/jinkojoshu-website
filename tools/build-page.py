@@ -380,9 +380,8 @@ def yt_thumb(yid):
 DH = ("world", "Back to the globe")
 # Where the dance work happened (lat, lon): the globe that opens the issue
 PLACES = [
-    dict(city="Amsterdam · Netherlands", lat=52.37, lon=4.90, items=[
+    dict(city="Amsterdam · Netherlands", lat=52.37, lon=4.90, dy=5, items=[
         ("Claude · C’est La Vie", "Music video", "#claude"),
-        ("Oh My: The Holy GraiLL", "Lowlands Festival", "#holygraill"),
         ("Yade Lauren", "Festival show", "#yade"),
         ("JMD", "Stage", "#jmd"),
         ("Hashna", "Collab", "#hashna"),
@@ -390,6 +389,7 @@ PLACES = [
         ("Short movie", "Film", "#shortmovie"),
         ("A$AP Rocky", "Tour", "#asap"),
         ("Lucid Dreaming", "Film", "commercials.html")]),
+    dict(city="Lowlands · Biddinghuizen", lat=52.45, lon=5.69, dy=-15, items=[("Oh My: The Holy GraiLL", "Dance film", "#holygraill")]),
     dict(city="London", lat=51.51, lon=-0.13, side="left", dy=-8, items=[
         ("Madonna · Confessions II", "Music video", "#madonna"),
         ("Breakin’ Convention", "Ghetto Funk", "#ghettofunk"),
