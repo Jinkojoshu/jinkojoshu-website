@@ -123,7 +123,7 @@ vid "Dance clips/Short movie .MOV"                                 short-movie
 vid "Dance clips/Collab Jan London.MOV"                            dance-jan-london
 
 # YouTube thumbnails
-for id in WEawH7y-SRs NjRvXjSHze4 yJtckcMHM2g oVR1SJvekRw CV84FmeBRbU 0otuG_RO1mI hEHwr5k9pd0; do
+for id in WEawH7y-SRs ulqwdGpfbvk NjRvXjSHze4 yJtckcMHM2g oVR1SJvekRw CV84FmeBRbU 0otuG_RO1mI hEHwr5k9pd0; do
   [[ -f site/assets/yt/$id.jpg ]] || curl -s -o site/assets/yt/$id.jpg https://i.ytimg.com/vi/$id/maxresdefault.jpg
 done
 

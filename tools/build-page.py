@@ -36,21 +36,23 @@ BRANDS = [("Nike", ["nike"], "2023 · 2025"), ("Samsung", ["samsung"], "2024"), 
 # ── Lookbook: a tight, editorial selection. (image slug, caption)
 LB = {
     2: ("nike-member-days-look", "Nike — Member Days"),
-    5: ("polaroid-03", "Polaroid"),
+    5: ("polaroid-03", "APL polaroid, photo by Kaj Lehner"),
     8: ("bol-jbl-03", "bol × JBL — campaign"),
     9: ("adidas-lookbook", "Adidas — lookbook"),
-    10: ("pasqual-shoot", "Shot with Pasqual"),
+    10: ("pasqual-shoot", "Shoot with Pasqual Dominic"),
     11: ("editorial-01", "Editorial"),
     15: ("film-2025-02", "On film, 2025"),
     21: ("lucid-dreaming-group", "Lucid Dreaming — the cast"),
     22: ("lookbook-new-01", "Lucid Dreaming — on set"),
-    23: ("lookbook-new-02", "In motion"),
-    24: ("lookbook-new-03", "Editorial"),
-    25: ("lookbook-new-04", "Editorial"),
-    26: ("lookbook-new-05", "Portrait"),
-    27: ("lookbook-new-06", "Portrait"),
-    28: ("lookbook-new-07", "In motion"),
+    23: ("lookbook-new-02", "Shay program, photo by Pasqual Dominic"),
+    24: ("lookbook-new-03", "Editorial, shot by Megan Jane"),
+    25: ("lookbook-new-04", "Editorial, shot by Megan Jane"),
+    26: ("lookbook-new-05", "Portrait by Brandon Broodje"),
+    27: ("lookbook-new-06", "Portrait for Levi’s"),
+    28: ("lookbook-new-07", "In motion, shot by Veerle Haan"),
 }
+# Photographers whose name in a caption links to their site
+CREDIT_LINKS = {"Pasqual Dominic": "https://www.pasqualdominic.com/"}
 
 ONFILM = {i: (f"onfilm-{i:02d}", "On film, shot by Jinko") for i in range(1, 17)}
 POLAS = [f"pola-{i:02d}" for i in range(1, 35) if i != 6]   # 6 is a near-copy of 5
@@ -128,7 +130,13 @@ class Page:
 def photo(no, slug, cap, cls=""):
     return (f'<figure class="ph {cls}"><button class="ph-img" data-full="assets/img/{slug}.jpg" data-caption="{e(f"Nº{no:02d} — {cap}")}">'
             f'<img src="assets/img/{slug}-sm.jpg" srcset="assets/img/{slug}-sm.jpg 900w, assets/img/{slug}.jpg 2200w" sizes="(max-width: 760px) 100vw, 45vw" alt="{e(cap)}" loading="lazy"></button>'
-            f'<figcaption><i>Nº{no:02d}</i> {e(cap)}</figcaption></figure>')
+            f'<figcaption><i>Nº{no:02d}</i> {credit_links(e(cap))}</figcaption></figure>')
+
+
+def credit_links(cap):
+    for name, url in CREDIT_LINKS.items():
+        cap = cap.replace(name, f'<a href="{url}" target="_blank" rel="noopener">{name}</a>')
+    return cap
 
 
 def bleed_page(section, no, item):
@@ -164,11 +172,15 @@ def feature_page(section, kicker, right, heading, deck, media, after=""):
     return Page(f'<div class="pg">{top(kicker, right)}<h3 class="pg-h">{heading}</h3><p class="pg-deck">{deck}</p>{media}{after}</div>', section)
 
 
+REPRESENTED = '<a href="https://www.aplmodels.com/men" target="_blank" rel="noopener">APL</a> · The Movers'
+
+
 def contact_page():
     return Page(f'''<div class="pg">{top("Back cover", "Bookings &amp; collabs")}
   <div class="contact-links">
     <a href="mailto:info@jinkojoshu.com">info@jinkojoshu.com</a>
     <a href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Instagram — @jinkojoshu</a>
+    <span class="rep">Represented by {REPRESENTED}</span>
     <span class="jp">ジンコ・ジョシュ</span>
   </div>
 </div>''' + giant(["Work", "with me"], "Work with me").replace('<div class="band">', '<a class="band band-link" href="mailto:info@jinkojoshu.com">', 1).replace("</h2></div>", "</h2></a>"), None, "dark", "52%")
@@ -356,17 +368,21 @@ def project(pid, hub, place, kind_label, title, deck, facts, right, right_cls="p
     return [left, Page(right, cls=right_cls)]
 
 
+def credits(rows):
+    return '<dl class="credits">' + "".join(f'<div{" class=cast" if k == "Cast" else ""}><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in rows) + '</dl>'
+
+
 def yt_thumb(yid):
     return f"assets/yt/{yid}.jpg"
 
 
 # ───────────────────────── Nº02 Dance ─────────────────────────
 DH = ("world", "Back to the globe")
-DESPERTARES = "https://www.soulartsproductions.mx/"
 # Where the dance work happened (lat, lon): the globe that opens the issue
 PLACES = [
     dict(city="Amsterdam · Netherlands", lat=52.37, lon=4.90, items=[
         ("Claude · C’est La Vie", "Music video", "#claude"),
+        ("Oh My: The Holy GraiLL", "Lowlands Festival", "#holygraill"),
         ("Yade Lauren", "Festival show", "#yade"),
         ("JMD", "Stage", "#jmd"),
         ("Hashna", "Collab", "#hashna"),
@@ -381,7 +397,7 @@ PLACES = [
     dict(city="Guilin · China", lat=25.27, lon=110.29, side="left", items=[("On the bridge", "Dance film", "#bridge")]),
     dict(city="Shanghai · China", lat=31.23, lon=121.47, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
     dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html")]),
-    dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", DESPERTARES)]),
+    dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", "#ghettofunk")]),
     dict(city="Canada", lat=43.65, lon=-79.38, dy=-6, items=[("On tour", "Ghetto Funk", "#ghettofunk")]),
 ]
 import json
@@ -402,7 +418,7 @@ GF_VIDEOS = [
     '<a class="card fill card-link" href="#tgs"><div class="cardimg"><img src="assets/img/tgs-01-sm.jpg" alt="" loading="lazy">'
     '<span class="no">On tour</span></div><span class="c-brand">The Greatest Show →</span><span class="c-sub">China · our two-hour show</span></a>',
 ]
-TOURS = [("Breakin’ Convention", "UK", None), ("Canada", "Tour", None), ("Despertares", "Mexico City · 2×", DESPERTARES),
+TOURS = [("Breakin’ Convention", "UK", None), ("Canada", "Tour", None), ("Despertares", "Mexico City · 2×", None),
          ("The Greatest Show", "China", "#tgs")]
 tours = "".join((f'<a class="tour" href="{h}"{EXT if h.startswith("http") else ""}>' if h else '<div class="tour">') + f'<b>{e(t)}</b><span>{e(w)}</span>'
                 + ('</a>' if h else '</div>') for t, w, h in TOURS)
@@ -420,7 +436,9 @@ issue2 = [
   <button class="gf-photo" data-full="assets/img/gf-home.jpg" data-caption="Ghetto Funk Collective · on stage"><img src="assets/img/gf-home.jpg" alt="Ghetto Funk Collective dancers on stage"></button>
   <div class="gf-text">
     <span class="gf-kicker">Home base · Netherlands</span>
-    <p>A dance collective that feels like family to me, founded by Ruben Chi and Roche Apinsa. I got the honour to become part of it, and to tour with them.</p>
+    <p>A dance collective that feels like family to me. I got the honour to become part of it, and to tour with them.</p>
+    <div class="gf-crew"><p><span>Founders</span>Ruben Chi &amp; Roche Apinsa</p>
+      <p><span>Dancers</span>Joshua Markiet, Imaury dos Santos (Kidlock), Ibrah, Juan Jose Markes, Rowley Silver</p></div>
     <div class="tours">{tours}</div>
   </div>
   {back_link("world", "Back to the globe")}
@@ -441,6 +459,16 @@ issue2 = [
              "Dancer in the official music video for Claude’s <i>C’est La Vie</i>, the Netherlands’ entry for Eurovision 2025.",
              [("Where", "Amsterdam"), ("Role", "Dancer"), ("Year", "2025")],
              watch_media("yt", "hEHwr5k9pd0", "Claude · C’est La Vie · Official Music Video", yt_thumb("hEHwr5k9pd0"))),
+    *project("holygraill", DH, "Lowlands · Biddinghuizen", "Dance film", "Oh My: The Holy GraiLL",
+             "A dance film by Linde Wagemakers, shot at Lowlands Festival in Biddinghuizen.",
+             [("Where", "Lowlands Festival"), ("Role", "Dancer"), ("Choreography · Direction", "Linde Wagemakers")],
+             watch_media("yt", "ulqwdGpfbvk", "Oh My: The Holy GraiLL · Lowlands", yt_thumb("ulqwdGpfbvk")),
+             extra_left=credits([("Producer", "Linde Wagemakers"), ("Co-producer", "Lowlandstelevisie"), ("DoP", "Sem Geelen"),
+                                 ("1st AC", "Bram van Dommelen"), ("Composer", "Tom van Wee"), ("Edit · Grading", "Sem Geelen"),
+                                 ("Styling", "Nina Keijzer"), ("Rehearsal studio", "Chasse Dance Studio"),
+                                 ("Cast", "Amber Veltman, Jack Butler, Jinko Joshu Emanuel Wu Adams, Lulu Verstegen, Linde Wagemakers, "
+                                          "Maxime Abbenhues, Mees Meeuwsen, Niek Wagenaar, Nina Keijzer, Nikki Duin, Keanah Faith Simin, "
+                                          "Sarah Khalay, Sem Houmes, Siena Verber, Winter Wieringa")])),
     *project("yade", DH, "Amsterdam", "Festival show", "Yade Lauren",
              "Yade Lauren asked me to join her show as a performer. We played a festival together and brought more of a fashion vibe to her set.",
              [("Where", "Amsterdam"), ("Role", "Performer")],
@@ -542,6 +570,7 @@ index = head("Jinko Joshu — Magazine Nº01",
   <article class="mag cover-mag" aria-label="Issue Nº01 — showreel">
     <div class="page page-l" style="--band:50%">
       <span class="folio">Jinko Joshu — Issue Nº01</span>
+      <a class="cover-contact" href="mailto:info@jinkojoshu.com">Contact me</a>
       <span class="credit">Showreel · Autumn 2026</span>
       <img class="silhouette" src="assets/mag/halftone-portrait.png" alt="">
       {giant(["Jinko", "Joshu"], "Jinko Joshu", tag="h1")}
@@ -563,6 +592,7 @@ index = head("Jinko Joshu — Magazine Nº01",
 
   <footer class="desk-foot">
     <a href="mailto:info@jinkojoshu.com">Work with me — info@jinkojoshu.com</a>
+    <span class="rep">Represented by {REPRESENTED}</span>
     <a href="https://www.instagram.com/jinkojoshu/" target="_blank" rel="noopener">Instagram</a>
     <a href="https://akyna-project.com/" target="_blank" rel="noopener">Akyna</a>
   </footer>

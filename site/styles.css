@@ -495,3 +495,28 @@ dialog#lightbox::backdrop { background: rgba(10,10,10,.96); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* cover: contact + representation */
+.cover-contact { position: absolute; top: 5cqw; right: 6cqw; z-index: 2; font-family: var(--sans); font-size: max(9px, 1.6cqw); letter-spacing: var(--label-track); text-transform: uppercase; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+.cover-contact:hover, .cover-contact:focus-visible { color: var(--accent); }
+.desk-foot .rep { color: var(--muted); }
+.desk-foot .rep a { color: var(--ink-on-dark, inherit); }
+.desk-foot a:first-child { margin-right: 0; }
+.desk-foot .rep { margin-right: auto; }
+.contact-links .rep { font-family: var(--sans); font-size: max(10px, 1.7cqw); letter-spacing: var(--label-track); text-transform: uppercase; color: #9C988F; }
+.contact-links .rep a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* project credits (film crew) */
+.credits { margin: 2.4cqw 0 2cqw; display: grid; grid-template-columns: 1fr 1fr; gap: .9cqw 3cqw; font-size: max(9px, 1.55cqw); line-height: 1.35; }
+.credits div { display: flex; flex-direction: column; }
+.credits .cast { grid-column: 1 / -1; }
+.credits dt { font-family: var(--sans); font-size: max(7px, 1.2cqw); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--muted); }
+.credits dd { margin: 0; }
+
+/* Ghetto Funk crew */
+.gf-crew { display: flex; flex-direction: column; gap: .8cqw; }
+.gf-crew p { margin: 0; font-size: max(10px, 1.9cqw); line-height: 1.35; }
+.gf-crew span { display: block; font-family: var(--sans); font-size: max(7px, 1.3cqw); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--muted); }
+
+/* photo credits that link */
+.ph figcaption a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
