@@ -525,3 +525,14 @@ dialog#lightbox::backdrop { background: rgba(10,10,10,.96); }
 .lb-body { overflow: hidden; }
 .lb-body img.zoomable { touch-action: none; cursor: zoom-in; user-select: none; -webkit-user-drag: none; will-change: transform; }
 .lb-body img.zoomable.zoomed { cursor: grab; }
+
+/* globe zoom buttons: drawn with lines, no symbols */
+.globe-zoom { position: absolute; right: 5cqw; bottom: 4.4cqw; display: flex; flex-direction: column; border: var(--rule); background: var(--sheet); z-index: 1; }
+.globe-zoom button { position: relative; width: max(34px, 5.4cqw); aspect-ratio: 1; cursor: pointer; }
+.globe-zoom button + button { border-top: var(--rule); }
+.globe-zoom button::before, .globe-zoom button[data-zoom="in"]::after { content: ""; position: absolute; left: 50%; top: 50%; width: 38%; height: 1.5px; background: var(--ink); transform: translate(-50%, -50%); }
+.globe-zoom button[data-zoom="in"]::after { transform: translate(-50%, -50%) rotate(90deg); }
+.globe-zoom button:hover, .globe-zoom button:focus-visible { background: var(--ink); }
+.globe-zoom button:hover::before, .globe-zoom button:hover::after, .globe-zoom button:focus-visible::before, .globe-zoom button:focus-visible::after { background: var(--sheet); }
+.globe-zoom button:disabled { opacity: .3; cursor: default; background: none; }
+.globe-zoom button:disabled::before, .globe-zoom button:disabled::after { background: var(--ink); }

@@ -439,7 +439,7 @@ issue2 = [
          f'<p class="pg-deck">Where the work took me. Turn the globe, click a city or pick a project.</p>'
          f'<ol class="places">{places_list}</ol></div>', ("world", "Dance"), anchor="world"),
     Page(f'<div class="globe-wrap"><canvas class="globe" data-places="{GLOBE_DATA}" aria-label="Globe with the places Jinko danced"></canvas>'
-         f'<div class="globe-pop" hidden></div><span class="globe-hint">Drag to turn · click a city</span>'
+         f'<div class="globe-pop" hidden></div><span class="globe-hint">Drag to turn · pinch or scroll to zoom · click a city</span><div class="globe-zoom"><button data-zoom="in" aria-label="Zoom in"></button><button data-zoom="out" aria-label="Zoom out"></button></div>'
          f'<a class="home-base" href="#ghettofunk"><span class="home-ico" aria-hidden="true"></span><span><b>Home base</b>Ghetto Funk · Netherlands</span></a></div>', None, "globe-page"),
     # Ghetto Funk: its own home (JUMP-poster layout)
     Page(f'''<div class="gf-home">

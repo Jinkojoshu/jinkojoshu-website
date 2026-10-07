@@ -301,7 +301,7 @@ if (globe && window.GLOBE_LAND) {
   const RAD = Math.PI / 180;
   const ink = '#141414', sheet = '#F5F3EE', mono = "500 10px 'IBM Plex Mono', monospace";
   let lon0 = 12, lat0 = 42;           // the point facing us (start over Europe)
-  let size = 0, dpr = 1, R = 0, active = -1, popFor = -1, idleUntil = 0, tween = null, dirty = true;
+  let size = 0, dpr = 1, R = 0, baseR = 0, zoom = 1, active = -1, popFor = -1, idleUntil = 0, tween = null, dirty = true;
 
   // land dots, unpacked once
   const dots = [];
@@ -328,7 +328,7 @@ if (globe && window.GLOBE_LAND) {
     ctx.beginPath(); ctx.arc(c, c, R, 0, 2 * Math.PI); ctx.fillStyle = sheet; ctx.fill();
     // land
     const sp0 = Math.sin(lat0 * RAD), cp0 = Math.cos(lat0 * RAD), l0 = lon0 * RAD;
-    const d = Math.max(1, size / 360);
+    const d = Math.max(1, size / 360) * Math.pow(zoom, 0.75);
     ctx.fillStyle = 'rgba(20,20,20,.78)';
     for (const [lr, sp, cp] of dotsRad) {
       const cl = Math.cos(lr - l0);
@@ -362,7 +362,7 @@ if (globe && window.GLOBE_LAND) {
     const w = globe.getBoundingClientRect().width;
     if (!w) return;
     dpr = window.devicePixelRatio || 1;
-    size = w; R = w / 2 - 2;
+    size = w; baseR = w / 2 - 2; R = baseR * zoom;
     globe.width = Math.round(w * dpr); globe.height = Math.round(w * dpr);
     draw();
   }
@@ -385,13 +385,47 @@ if (globe && window.GLOBE_LAND) {
     };
   }
 
-  // drag to turn (mouse and touch)
-  let drag = null;
+  // zoom: pinch on a phone, scroll wheel / trackpad on a computer, or the + and - buttons
+  const ZMIN = 1, ZMAX = 6;
+  let zoomTween = null;
+  function setZoom(z) {
+    zoom = Math.max(ZMIN, Math.min(ZMAX, z));
+    R = baseR * zoom;
+    globe.classList.toggle('zoomed', zoom > 1.01);
+    zoomBtns.forEach((b) => { b.disabled = b.dataset.zoom === 'in' ? zoom >= ZMAX - .01 : zoom <= ZMIN + .01; });
+    dirty = true;
+  }
+  function zoomTo(z) {
+    const from = zoom, to = Math.max(ZMIN, Math.min(ZMAX, z)), t0 = performance.now();
+    zoomTween = (now) => {
+      const k = Math.min(1, (now - t0) / 350);
+      setZoom(from + (to - from) * ease(k));
+      if (k === 1) zoomTween = null;
+    };
+    idleUntil = Infinity;
+  }
+  const zoomBtns = [...document.querySelectorAll('.globe-zoom button')];
+  zoomBtns.forEach((b) => b.addEventListener('click', () => zoomTo(b.dataset.zoom === 'in' ? zoom * 1.8 : zoom / 1.8)));
+  setZoom(1);
+  globe.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    zoomTween = null; idleUntil = Infinity;
+    setZoom(zoom * Math.exp(-ev.deltaY / (ev.ctrlKey ? 100 : 400)));
+  }, { passive: false });
+
+  // drag to turn (mouse and touch); two fingers pinch to zoom
+  let drag = null, pinch = null;
+  const touches = new Map();
+  const spread = () => { const [[ax, ay], [bx, by]] = [...touches.values()]; return Math.hypot(ax - bx, ay - by); };
   globe.addEventListener('pointerdown', (ev) => {
+    touches.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (touches.size === 2) { pinch = { d: spread(), z: zoom }; if (drag) drag.moved = true; zoomTween = null; return; }
     drag = { x: ev.clientX, y: ev.clientY, moved: false };
     tween = null; idleUntil = Infinity;
   });
   addEventListener('pointermove', (ev) => {
+    if (touches.has(ev.pointerId)) touches.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pinch) { if (touches.size === 2) setZoom(pinch.z * spread() / pinch.d); return; }
     if (!drag) return;
     const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
@@ -401,10 +435,17 @@ if (globe && window.GLOBE_LAND) {
     lat0 = Math.max(-70, Math.min(70, lat0 + dy * k));
     dirty = true;
   });
-  addEventListener('pointerup', () => {
+  const release = (ev) => {
+    touches.delete(ev.pointerId);
+    if (pinch) {
+      if (touches.size) return;              // wait for the second finger to lift
+      pinch = null; setTimeout(() => { drag = null; }, 0); return;
+    }
     if (drag) idleUntil = performance.now() + 5000;
     setTimeout(() => { drag = null; }, 0);
-  });
+  };
+  addEventListener('pointerup', release);
+  addEventListener('pointercancel', release);
 
   // click a city: its projects appear next to it
   globe.addEventListener('click', (ev) => {
@@ -447,7 +488,9 @@ if (globe && window.GLOBE_LAND) {
   }
   function placePop() {
     if (!pop || pop.hidden || popFor < 0) return;
-    const pl = places[popFor], pt = project(pl.lon, pl.lat);
+    const pl = places[popFor];
+    let pt = project(pl.lon, pl.lat);
+    if (pt && (pt[0] < 0 || pt[1] < 0 || pt[0] > size || pt[1] > size)) pt = null;   // zoomed out of view
     pop.style.visibility = pt ? '' : 'hidden';
     if (!pt) return;
     pop.style.left = `${globe.offsetLeft + pt[0]}px`;
@@ -458,7 +501,8 @@ if (globe && window.GLOBE_LAND) {
   const loop = (now) => {
     if (globe.offsetParent) {
       if (tween) { tween(now); dirty = true; }
-      else if (!drag && now > idleUntil) { lon0 -= 0.06; dirty = true; }
+      else if (!drag && now > idleUntil && zoom < 1.2) { lon0 -= 0.06; dirty = true; }
+      if (zoomTween) zoomTween(now);
       if (dirty) draw();
     }
     requestAnimationFrame(loop);
