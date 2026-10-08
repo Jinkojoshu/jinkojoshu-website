@@ -5,6 +5,7 @@
   dance.html        Nº02 Dance
   styling.html      Nº03 Styling
   photography.html  Nº04 On film
+  akyna.html        Nº05 My brand (Akyna)
 Edit the lists / page text and run:  python3 tools/build-page.py
 """
 from html import escape as e
@@ -23,6 +24,7 @@ COMMERCIALS = [
     dict(title="Lucid Dreaming", sub="Trailer · 2023", thumb="lucid", focus="41% 50%", video="lucid-dreaming-trailer",
          award="Gouden Kalf competition"),
     dict(logos=["nike"], title="Nike", sub="Behind the scenes · male model", thumb="nikebts", focus="50% 30%", video="nike-bts"),
+    dict(title="Colbe", sub="Make work move you", thumb="colbe", focus="58% 50%", youtube="k9YMgz8dCho"),
 ]
 # The big feature page of the commercials (vertical film on Vimeo)
 WEMBY = dict(logos=["nike"], title="Nike × Wemby", sub="Basketball · 2025", thumb="wemby", vimeo="1175554062",
@@ -31,7 +33,7 @@ WEMBY = dict(logos=["nike"], title="Nike × Wemby", sub="Basketball · 2025", th
 # Last page of the commercials: the brands
 BRANDS = [("Nike", ["nike"], "2023 · 2025"), ("Samsung", ["samsung"], "2024"), ("bol × JBL", ["bol", "jbl"], "2026"),
           ("Philips", ["philips"], "2025"), ("Lavish", ["lavish"], "2025"), ("The Athlete’s Foot", ["footathletes"], "2025"),
-          ("Lucid Dreaming", [], "2023 · Award"), ("Madonna", [], "Film"), ("Eurovision", [], "2025")]
+          ("Lucid Dreaming", [], "2023 · Award"), ("Colbe", [], "Commercial"), ("Madonna", [], "Film"), ("Eurovision", [], "2025")]
 
 # ── Lookbook: a tight, editorial selection. (image slug, caption)
 LB = {
@@ -66,8 +68,9 @@ YADE_PHOTOS = ["yade-01", "yade-02", "yade-03", "yade-04"]
 ISSUES = [
     ("commercials.html", "Nº01", "Commercials & Lookbook", None, None, None, None),
     ("dance.html", "Nº02", "Dance", "Dance", "ghetto-funk-01", "45% 40%", "Madonna · The Greatest Show · Ghetto Funk"),
-    ("styling.html", "Nº03", "Styling", "Styling", "styling-cover", "50% 55%", "Coast Contra · Groove · Akyna"),
+    ("styling.html", "Nº03", "Styling", "Styling", "styling-cover", "50% 55%", "Coast Contra · Groove · Collectief MAMM"),
     ("photography.html", "Nº04", "On film", "On film", "onfilm-01", "50% 85%", "My photography"),
+    ("akyna.html", "Nº05", "My brand", "Akyna", "akyna-01", "50% 30%", "Akyna · AW26"),
 ]
 
 
@@ -298,7 +301,8 @@ def logo_img(name, cls):
 def strip_cell(c, no):
     """One frame in the commercials strip: still at rest, plays on hover (brand logo slides in), full film on click."""
     focus = f' style="object-position:{c["focus"]}"' if c.get("focus") else ""
-    play = f'data-vimeo="{c["vimeo"]}" data-vertical="1"' if c.get("vimeo") else f'data-video="assets/video/{c["video"]}.mp4"'
+    play = (f'data-vimeo="{c["vimeo"]}" data-vertical="1"' if c.get("vimeo") else
+            f'data-youtube="{c["youtube"]}"' if c.get("youtube") else f'data-video="assets/video/{c["video"]}.mp4"')
     note = f' data-note="{e(c["note"])}"' if c.get("note") else ""
     preview = c.get("clip") or c.get("video")
     vid = (f'<video data-preview="assets/video/{preview}.mp4" muted loop playsinline preload="none"{focus}></video>'
@@ -312,7 +316,7 @@ def strip_cell(c, no):
 
 
 ORDER = [COMMERCIALS[0], WEMBY, COMMERCIALS[1], COMMERCIALS[2], COMMERCIALS[3],   # on the opener
-         COMMERCIALS[4], COMMERCIALS[5], COMMERCIALS[6], COMMERCIALS[7]]            # on the next page
+         COMMERCIALS[4], COMMERCIALS[5], COMMERCIALS[6], COMMERCIALS[7], COMMERCIALS[8]]  # further along the strip
 cells = [strip_cell(c, f"{i:02d}") for i, c in enumerate(ORDER, 1)]
 strip = "".join(cells)
 COMM_ART = f'''<div class="spread-art comm-art">
@@ -363,7 +367,7 @@ def back_link(hub_id, label):
 
 def watch_media(kind, ident, caption, thumb, start=None):
     """Right page of a project: the film as a full page still with a play button."""
-    attr = {"yt": f'data-youtube="{ident}"', "video": f'data-video="assets/video/{ident}.mp4"'}[kind]
+    attr = {"yt": f'data-youtube="{ident}"', "vimeo": f'data-vimeo="{ident}"', "video": f'data-video="assets/video/{ident}.mp4"'}[kind]
     st = f' data-start="{start}"' if start else ""
     live = (f'<video class="autoplay" data-src="assets/video/{ident}.mp4" muted loop playsinline preload="none" poster="{thumb}"></video>'
             if kind == "video" else "")
@@ -371,12 +375,12 @@ def watch_media(kind, ident, caption, thumb, start=None):
             f'<span class="watch-play"><i aria-hidden="true"></i> Watch</span></button>')
 
 
-def project(pid, hub, place, kind_label, title, deck, facts, right, right_cls="photo-page", extra_left=""):
+def project(pid, hub, place, kind_label, title, deck, facts, right, right_cls="photo-page", extra_left="", right_band=None):
     rows = "".join(f'<div class="fact"><span>{e(k)}</span><b>{e(v)}</b></div>' for k, v in facts)
     left = Page(f'<div class="pg">{top(e(place), e(kind_label))}<h2 class="pg-title pg-title-s">{title}</h2>'
                 f'<p class="pg-deck">{deck}</p><div class="facts">{rows}</div>{extra_left}'
                 f'{back_link(hub[0], hub[1])}</div>', anchor=pid)
-    return [left, Page(right, cls=right_cls)]
+    return [left, Page(right, cls=right_cls, band=right_band)]
 
 
 def credits(rows):
@@ -405,8 +409,10 @@ PLACES = [
         ("Madonna · Confessions II", "Music video", "#madonna"),
         ("Breakin’ Convention", "Ghetto Funk", "#ghettofunk"),
         ("Collab with Jan", "Dance video", "#janlondon")]),
+    dict(city="Budapest", lat=47.50, lon=19.04, dy=4, items=[("Sziget Festival", "Main programme", "#sziget")]),
     dict(city="Guilin · China", lat=25.27, lon=110.29, side="left", items=[("On the bridge", "Dance film", "#bridge")]),
-    dict(city="Shanghai · China", lat=31.23, lon=121.47, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
+    dict(city="Nanjing · China", lat=32.06, lon=118.80, items=[("The Greatest Show", "Ghetto Funk", "#tgs")]),
+    dict(city="Bandung · Indonesia", lat=-6.91, lon=107.61, items=[("Elevate the Future", "Teaching · with Akyna", "#elevate")]),
     dict(city="Paris", lat=48.86, lon=2.35, dy=6, items=[("Nike × Wemby", "Commercial", "commercials.html?film=wemby")]),
     dict(city="Barcelona", lat=41.39, lon=2.17, dy=8, items=[("Samsung", "Commercial", "commercials.html?film=samsung")]),
     dict(city="Mexico City", lat=19.43, lon=-99.13, dy=6, items=[("Despertares · 2×", "Ghetto Funk", "#ghettofunk")]),
@@ -428,10 +434,10 @@ GF_VIDEOS = [
     card(dict(title="Mexico", sub="Teaser · Despertares", thumb="gf-mexico", video="gf-mexico", caption="Ghetto Funk Collective · Mexico teaser"), no="GF/04"),
     card(dict(title="James Brown", sub="Studio session", thumb="gf-james-brown", video="gf-james-brown", caption="Ghetto Funk Collective · James Brown session"), no="GF/05"),
     '<a class="card fill card-link" href="#tgs"><div class="cardimg"><img src="assets/img/tgs-01-sm.jpg" alt="" loading="lazy">'
-    '<span class="no">On tour</span></div><span class="c-brand">The Greatest Show →</span><span class="c-sub">China · our two-hour show</span></a>',
+    '<span class="no">On tour</span></div><span class="c-brand">The Greatest Show →</span><span class="c-sub">Nanjing · our two-hour show</span></a>',
 ]
 TOURS = [("Breakin’ Convention", "UK", None), ("Canada", "Tour", None), ("Despertares", "Mexico City · 2×", None),
-         ("The Greatest Show", "China", "#tgs")]
+         ("Sziget", "Budapest", "#sziget"), ("The Greatest Show", "Nanjing · China", "#tgs")]
 tours = "".join((f'<a class="tour" href="{h}"{EXT if h.startswith("http") else ""}>' if h else '<div class="tour">') + f'<b>{e(t)}</b><span>{e(w)}</span>'
                 + ('</a>' if h else '</div>') for t, w, h in TOURS)
 
@@ -456,13 +462,25 @@ issue2 = [
   {back_link("world", "Back to the globe")}
 </div>''', anchor="ghettofunk", cls="gf-page"),
     Page(f'<div class="pg">{top("Ghetto Funk Collective", "All films")}{grid(GF_VIDEOS, 2, 3)}</div>'),
-    *project("tgs", DH, "Ghetto Funk on tour · China", "Choreographer · Dancer", "The Greatest Show",
+    *project("tgs", DH, "Ghetto Funk on tour · Nanjing", "Choreographer · Dancer", "The Greatest Show",
              "We were invited to create a two-hour show and to dance in it ourselves, alongside 170 guest dancers from China. A challenge both as choreographer and as dancer.",
-             [("Where", "China"), ("With", "Ghetto Funk Collective"), ("Role", "Choreographer · dancer")],
+             [("Where", "Nanjing, China"), ("With", "Ghetto Funk Collective"), ("Role", "Choreographer · dancer")],
              f'<div class="pg">{top("The Greatest Show", "Photos")}' + grid(
-                 [tile(TGS_PHOTOS[0], "The Greatest Show · China").replace('class="tile"', 'class="tile span-all"')]
-                 + [tile(s, "The Greatest Show · China") for s in TGS_PHOTOS[1:]], 2, tpl="3fr 2fr") + '</div>', "",
+                 [tile(TGS_PHOTOS[0], "The Greatest Show · Nanjing").replace('class="tile"', 'class="tile span-all"')]
+                 + [tile(s, "The Greatest Show · Nanjing") for s in TGS_PHOTOS[1:]], 2, tpl="3fr 2fr") + '</div>', "",
              extra_left='<a class="more-btn" href="#ghettofunk">Ghetto Funk Collective →</a>'),
+    *project("sziget", DH, "Budapest · Hungary", "Festival", "Sziget Festival",
+             "Dancer in the main programme of Sziget Festival in Budapest, on tour with Ghetto Funk Collective.",
+             [("Where", "Sziget, Budapest"), ("With", "Ghetto Funk Collective"), ("Role", "Dancer · main programme")],
+             f'<div class="pg">{top("Sziget Festival", "Budapest")}' + grid([tile("sziget-01", "Ghetto Funk Collective · Sziget Festival, Budapest")], 1, 1) + '</div>', "",
+             extra_left='<a class="more-btn" href="#ghettofunk">Ghetto Funk Collective →</a>'),
+    *project("elevate", DH, "Bandung · Indonesia", "Teaching", "Elevate the Future",
+             "A two year dance programme (2026 to 2027) for young people from poor families in Bandung. Three times a week they train "
+             "hiphop, locking, popping, freestyle and body awareness, in a safe place to grow. I teach there, and Akyna works together with the project.",
+             [("Where", "Bandung, Indonesia"), ("Role", "Teacher"), ("With", "Akyna · Bandungfreestylejam"), ("Started by", "Milly Trouerbach")],
+             f'<div class="pg">{top("Elevate the Future", "Bandung")}<p class="pg-deck">Dance as a universal language: a bridge between young dancers in Indonesia and the Netherlands.</p></div>'
+             + giant(["Elevate", "the future"], "Elevate the Future"), "accent", right_band="52%",
+             extra_left='<a class="more-btn" href="https://www.voordekunst.nl/projecten/19807-elevate-the-future" target="_blank" rel="noopener">About the project</a>'),
     *project("madonna", DH, "London", "Music video", "Madonna · Confessions II",
              "Dancer in Madonna’s <i>Confessions II · The Film</i>. My part starts at 06:55; the player jumps straight there.",
              [("Where", "London"), ("Role", "Dancer"), ("Watch from", "06:55")],
@@ -520,13 +538,15 @@ SH = ("styling", "Back to styling")
 STYLING_PROJECTS = [
     ("Coast Contra · Don’t Worry", "Music video · Berlin MVA", "#videos"),
     ("Groove, The Show", "Theatre · Ghetto Funk × The Ruggeds", "#videos"),
-    ("Akyna", "My label · with Pasqual", "#akyna"),
+    ("Collectief MAMM · Big 30", "Theatre production", "#big30"),
+    ("Collectief MAMM · Ruim", "Theatre production", "#ruim"),
+    ("Looks", "Styled by Jinko", "#looks"),
 ]
 styling_list = "".join(f'<a href="{h}"><b>{e(t)}</b><span>{e(k)}</span></a>' for t, k, h in STYLING_PROJECTS)
 
 issue3 = [
     Page(f'<div class="pg">{top("Issue Nº03 · Styling", "Projects")}<h2 class="pg-title">Styling</h2>'
-         f'<p class="pg-deck">My styling journey began with styling the Ghetto Funk videos. From there: music videos, the stage and Akyna, the label I run with Pasqual.</p>'
+         f'<p class="pg-deck">My styling journey began with styling the Ghetto Funk videos. From there: music videos, the stage and theatre.</p>'
          f'<div class="places hub-list"><div class="place">{styling_list}</div></div></div>', ("styling", "Styling"), anchor="styling"),
     Page('<div class="hub-art hub-photo"><button data-full="assets/img/styling-cover.jpg" data-caption="Coast Contra, Don’t Worry · styled by Jinko Joshu"><img src="assets/img/styling-cover.jpg" alt="Coast Contra, styled by Jinko Joshu"></button>'
          '<span class="globe-hint">Coast Contra · Don’t Worry</span></div>', None, "hub-art-page"),
@@ -539,13 +559,30 @@ issue3 = [
          'fifty years of James Brown, Aretha Franklin and Marvin Gaye, funk &amp; soul, hip-hop and house. Put on your best outfit, sitting still is not an option.</p>'
          + watch_media("yt", "WEawH7y-SRs", "An inside look behind Groove The Show · Ghetto Funk Collective × The Ruggeds", yt_thumb("WEawH7y-SRs")).replace('class="watch"', 'class="watch watch-in"')
          + '</div>'),
-    Page(f'''<div class="pg">{top("The label", "AW26")}
+    *project("big30", SH, "Collectief MAMM", "Theatre · Styling", "Big 30",
+             "Styling for <i>Big 30</i>, a theatre production by Collectief MAMM.",
+             [("With", "Collectief MAMM"), ("Role", "Stylist"), ("Year", "2025"), ("Video", "Jesse Immanuel Bom")],
+             f'<div class="pg">{top("Collectief MAMM", "Big 30")}' + grid([tile("mamm-big30-01", "Collectief MAMM · Big 30"), tile("mamm-big30-02", "Collectief MAMM · Big 30")], 1, 2) + '</div>', "",
+             extra_left=watch_media("vimeo", "1084721091", "Collectief MAMM · Big 30 (2025)", "assets/img/mamm-big30-01-sm.jpg").replace('class="watch"', 'class="watch watch-in"')),
+    *project("ruim", SH, "Collectief MAMM", "Theatre · Styling", "Ruim",
+             "Styling for <i>Ruim</i>, a theatre production by Collectief MAMM.",
+             [("With", "Collectief MAMM"), ("Role", "Stylist")],
+             f'<div class="pg">{top("Collectief MAMM", "Ruim")}' + grid(
+                 [tile("mamm-ruim-01", "Collectief MAMM · Ruim").replace('class="tile"', 'class="tile span-all"')]
+                 + [tile(f"mamm-ruim-0{i}", "Collectief MAMM · Ruim") for i in (2, 3)], 2, tpl="3fr 2fr") + '</div>', ""),
+    with_anchor("looks", framed_page(None, "Styling · Looks", 1, ("styling-look-01", "Styled by Jinko Joshu"))),
+    bleed_page(None, 2, ("styling-look-02", "Styled by Jinko Joshu")),
+]
+
+# ───────────────────────── Nº05 My brand: Akyna ─────────────────────────
+A = ("akyna", "Akyna")
+issue5 = [
+    Page(f'''<div class="pg">{top("Issue Nº05 · My brand", "AW26")}
   <p class="pg-deck">Akyna is the brand I started together with Pasqual. From production to design, we do everything ourselves.</p>
   <a class="more-btn" href="https://akyna-project.com/" target="_blank" rel="noopener">akyna-project.com</a>
   {grid([tile("akyna-02", "Akyna · AW26"), tile("akyna-03", "Akyna · AW26")], 2, 1)}
-  {back_link("styling", "Back to styling")}
-</div>''' + giant(["Akyna"], "Akyna", cls="wide"), None, "accent", "30%", anchor="akyna"),
-    bleed_page(None, 1, ("akyna-01", "Akyna · AW26")),
+</div>''' + giant(["Akyna"], "Akyna", cls="wide"), A, "accent", "30%"),
+    bleed_page(A, 1, ("akyna-01", "Akyna · AW26")),
 ]
 
 # ───────────────────────── Nº04 On film ─────────────────────────
@@ -621,9 +658,11 @@ out = {
                       issue2, "styling.html", "Nº03 Styling", hub=True,
                       scripts='<script src="assets/globe-land.js"></script>\n'),
     "styling": magazine("styling.html", "Styling — Jinko Joshu",
-                        "Styling by Jinko Joshu: Coast Contra — Don’t Worry, and the label Akyna.", issue3, "photography.html", "Nº04 On film", hub=True),
+                        "Styling by Jinko Joshu: Coast Contra — Don’t Worry, Groove and Collectief MAMM.", issue3, "photography.html", "Nº04 On film", hub=True),
     "photography": magazine("photography.html", "On film — Jinko Joshu",
-                            "Photography by Jinko Joshu, shot on film.", issue4, "index.html", "Cover"),
+                            "Photography by Jinko Joshu, shot on film.", issue4, "akyna.html", "Nº05 My brand"),
+    "akyna": magazine("akyna.html", "Akyna — Jinko Joshu",
+                      "Akyna, the label of Jinko Joshu and Pasqual Dominic: AW26.", issue5, "index.html", "Cover"),
 }
 for name, html in out.items():
     (site / f"{name}.html").write_text(html)

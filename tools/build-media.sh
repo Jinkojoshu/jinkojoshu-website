@@ -122,6 +122,15 @@ img "Dance clips/Asap rocky tour .jpg"                             asap-02
 vid "Dance clips/Short movie .MOV"                                 short-movie
 vid "Dance clips/Collab Jan London.MOV"                            dance-jan-london
 
+# Added 2026-10-09
+img "PHOTOS/Ghettofunk/Sziget/IMG_5498.jpeg"                       sziget-01
+img "styling/foto voor styling page.jpg"                           styling-look-01
+img "styling/fotos voor styling page.JPG"                          styling-look-02
+n=0; for f in "styling/Collectief Mamm ( theater shows ) /Big 30 "/*.webp; do n=$((n+1)); img "$f" mamm-big30-0$n; done
+n=0; for f in "styling/Collectief Mamm ( theater shows ) /Ruim"/*.jpeg;    do n=$((n+1)); img "$f" mamm-ruim-0$n; done
+# Colbe commercial (YouTube): the still in the strip
+[[ -f site/assets/thumbs/colbe.jpg ]] || curl -s -o site/assets/thumbs/colbe.jpg https://i.ytimg.com/vi/k9YMgz8dCho/maxresdefault.jpg
+
 # YouTube thumbnails
 for id in WEawH7y-SRs ulqwdGpfbvk NjRvXjSHze4 yJtckcMHM2g oVR1SJvekRw CV84FmeBRbU 0otuG_RO1mI hEHwr5k9pd0; do
   [[ -f site/assets/yt/$id.jpg ]] || curl -s -o site/assets/yt/$id.jpg https://i.ytimg.com/vi/$id/maxresdefault.jpg
