@@ -540,16 +540,15 @@ STYLING_PROJECTS = [
     ("Groove, The Show", "Theatre · Ghetto Funk × The Ruggeds", "#videos"),
     ("Collectief MAMM · Big 30", "Theatre production", "#big30"),
     ("Collectief MAMM · Ruim", "Theatre production", "#ruim"),
-    ("Looks", "Styled by Jinko", "#looks"),
 ]
 styling_list = "".join(f'<a href="{h}"><b>{e(t)}</b><span>{e(k)}</span></a>' for t, k, h in STYLING_PROJECTS)
 
 issue3 = [
     Page(f'<div class="pg">{top("Issue Nº03 · Styling", "Projects")}<h2 class="pg-title">Styling</h2>'
          f'<p class="pg-deck">My styling journey began with styling the Ghetto Funk videos. From there: music videos, the stage and theatre.</p>'
-         f'<div class="places hub-list"><div class="place">{styling_list}</div></div></div>', ("styling", "Styling"), anchor="styling"),
-    Page('<div class="hub-art hub-photo"><button data-full="assets/img/styling-cover.jpg" data-caption="Coast Contra, Don’t Worry · styled by Jinko Joshu"><img src="assets/img/styling-cover.jpg" alt="Coast Contra, styled by Jinko Joshu"></button>'
-         '<span class="globe-hint">Coast Contra · Don’t Worry</span></div>', None, "hub-art-page"),
+         f'<div class="places hub-list"><div class="place">{styling_list}</div></div>'
+         + grid([tile("styling-look-01", "Styled by Jinko Joshu")], 1, 1) + '</div>', ("styling", "Styling"), anchor="styling"),
+    bleed_page(None, 2, ("styling-look-02", "Styled by Jinko Joshu")),
     Page(f'<div class="pg">{top("Music video", "Berlin Music Video Awards")}<h3 class="pg-h">Coast Contra · Don’t Worry</h3>'
          f'<p class="pg-deck">Styling for Coast Contra’s official music video “Don’t Worry”.</p>'
          + watch_media("yt", "NjRvXjSHze4", "Coast Contra · Don’t Worry (Official Music Video) · Styling", yt_thumb("NjRvXjSHze4")).replace('class="watch"', 'class="watch watch-in"')
@@ -570,8 +569,6 @@ issue3 = [
              f'<div class="pg">{top("Collectief MAMM", "Ruim")}' + grid(
                  [tile("mamm-ruim-01", "Collectief MAMM · Ruim").replace('class="tile"', 'class="tile span-all"')]
                  + [tile(f"mamm-ruim-0{i}", "Collectief MAMM · Ruim") for i in (2, 3)], 2, tpl="3fr 2fr") + '</div>', ""),
-    with_anchor("looks", framed_page(None, "Styling · Looks", 1, ("styling-look-01", "Styled by Jinko Joshu"))),
-    bleed_page(None, 2, ("styling-look-02", "Styled by Jinko Joshu")),
 ]
 
 # ───────────────────────── Nº05 My brand: Akyna ─────────────────────────
