@@ -537,7 +537,7 @@ issue2 = [
 SH = ("styling", "Back to styling")
 STYLING_PROJECTS = [
     ("Coast Contra · Don’t Worry", "Music video · Berlin MVA", "#videos"),
-    ("Groove, The Show", "Theatre · Ghetto Funk × The Ruggeds", "#videos"),
+    ("Groove, The Show", "Theatre · Ghetto Funk × The Ruggeds", "#groove"),
     ("Collectief MAMM · Big 30", "Theatre production", "#big30"),
     ("Collectief MAMM · Ruim", "Theatre production", "#ruim"),
 ]
@@ -553,11 +553,9 @@ issue3 = [
          f'<p class="pg-deck">Styling for Coast Contra’s official music video “Don’t Worry”.</p>'
          + watch_media("yt", "NjRvXjSHze4", "Coast Contra · Don’t Worry (Official Music Video) · Styling", yt_thumb("NjRvXjSHze4")).replace('class="watch"', 'class="watch watch-in"')
          + back_link("styling", "Back to styling") + '</div>', anchor="videos"),
-    Page(f'<div class="pg">{top("Theatre show", "Ghetto Funk Collective × The Ruggeds")}<h3 class="pg-h">Groove, The Show</h3>'
-         '<p class="pg-deck pg-deck-s">The Ruggeds and Ghetto Funk Collective take the swinging dance concert <i>Groove</i> through the theatres: '
-         'fifty years of James Brown, Aretha Franklin and Marvin Gaye, funk &amp; soul, hip-hop and house. Put on your best outfit, sitting still is not an option.</p>'
-         + watch_media("yt", "WEawH7y-SRs", "An inside look behind Groove The Show · Ghetto Funk Collective × The Ruggeds", yt_thumb("WEawH7y-SRs")).replace('class="watch"', 'class="watch watch-in"')
-         + '</div>'),
+    Page('<figure class="ph ph-bleed"><button class="ph-img" data-full="assets/img/styling-cover.jpg" data-caption="Coast Contra, Don’t Worry · styled by Jinko Joshu">'
+         '<img src="assets/img/styling-cover-sm.jpg" srcset="assets/img/styling-cover-sm.jpg 900w, assets/img/styling-cover.jpg 2200w" sizes="(max-width: 760px) 100vw, 45vw" alt="Coast Contra, styled by Jinko Joshu" loading="lazy"></button>'
+         '<figcaption>Coast Contra · Don’t Worry, styled by Jinko Joshu</figcaption></figure>', None, "photo-page"),
     *project("big30", SH, "Collectief MAMM", "Theatre · Styling", "Big 30",
              "Styling for <i>Big 30</i>, a theatre production by Collectief MAMM.",
              [("With", "Collectief MAMM"), ("Role", "Stylist"), ("Year", "2025"), ("Video", "Jesse Immanuel Bom")],
@@ -569,6 +567,11 @@ issue3 = [
              f'<div class="pg">{top("Collectief MAMM", "Ruim")}' + grid(
                  [tile("mamm-ruim-01", "Collectief MAMM · Ruim").replace('class="tile"', 'class="tile span-all"')]
                  + [tile(f"mamm-ruim-0{i}", "Collectief MAMM · Ruim") for i in (2, 3)], 2, tpl="3fr 2fr") + '</div>', ""),
+    Page(f'<div class="pg">{top("Theatre show", "Ghetto Funk Collective × The Ruggeds")}<h3 class="pg-h">Groove, The Show</h3>'
+         '<p class="pg-deck pg-deck-s">The Ruggeds and Ghetto Funk Collective take the swinging dance concert <i>Groove</i> through the theatres: '
+         'fifty years of James Brown, Aretha Franklin and Marvin Gaye, funk &amp; soul, hip-hop and house. Put on your best outfit, sitting still is not an option.</p>'
+         + watch_media("yt", "WEawH7y-SRs", "An inside look behind Groove The Show · Ghetto Funk Collective × The Ruggeds", yt_thumb("WEawH7y-SRs")).replace('class="watch"', 'class="watch watch-in"')
+         + back_link("styling", "Back to styling") + '</div>', anchor="groove"),
 ]
 
 # ───────────────────────── Nº05 My brand: Akyna ─────────────────────────
